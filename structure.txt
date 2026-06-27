@@ -1,0 +1,239 @@
+.
+├── README.md
+├── bun.lockb
+├── components.json
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   ├── Add credit in Supabase.pages
+│   ├── favicon.ico
+│   ├── placeholder.svg
+│   └── robots.txt
+├── src
+│   ├── App.css
+│   ├── App.tsx
+│   ├── assets
+│   │   ├── characters
+│   │   │   ├── achelois.png
+│   │   │   ├── aladdin.png
+│   │   │   ├── elon.png
+│   │   │   ├── god-of-gambling.png
+│   │   │   ├── goddess-of-fortune.png
+│   │   │   └── lucky-star.png
+│   │   ├── dragon-ai-chinese.png
+│   │   ├── dragon-ai-english.png
+│   │   ├── dragon-ai-logo-2.png
+│   │   ├── dragon-eye.png
+│   │   ├── dragon-logo.png
+│   │   ├── founder-icon.png
+│   │   ├── year-of-horse-2.png
+│   │   └── year-of-horse.png
+│   ├── components
+│   │   ├── CreditsDepletedPopup.tsx
+│   │   ├── DisclaimerDialog.tsx
+│   │   ├── ExplorerGiftBox.tsx
+│   │   ├── FeaturesSection.tsx
+│   │   ├── FestiveBanner.tsx
+│   │   ├── Footer.tsx
+│   │   ├── HeroSection.tsx
+│   │   ├── InlineLanguageSwitcher.tsx
+│   │   ├── LanguageToggle.tsx
+│   │   ├── LunarValentinePopup.tsx
+│   │   ├── MasterDisclaimerModal.tsx
+│   │   ├── MobileMark6Footer.tsx
+│   │   ├── NavLink.tsx
+│   │   ├── Navbar.tsx
+│   │   ├── OutOfCreditsPopup.tsx
+│   │   ├── PaymentSuccessModal.tsx
+│   │   ├── PricingSection.tsx
+│   │   ├── PrivacyPolicyDialog.tsx
+│   │   ├── QuickFeedbackPopup.tsx
+│   │   ├── RefundPolicyDialog.tsx
+│   │   ├── SignUpDialog.tsx
+│   │   ├── StockPickBox.tsx
+│   │   ├── TermsOfServiceDialog.tsx
+│   │   ├── TestimonialMarquee.tsx
+│   │   ├── TrendingProbabilities.tsx
+│   │   ├── UnsubscribeDialog.tsx
+│   │   ├── WelcomeModal.tsx
+│   │   ├── WhatsAppShareButton.tsx
+│   │   ├── dashboard
+│   │   │   ├── AdminPromoPanel.tsx
+│   │   │   ├── CreditWidget.tsx
+│   │   │   ├── DashboardHeader.tsx
+│   │   │   ├── DashboardSidebar.tsx
+│   │   │   ├── MobileDashboardNav.tsx
+│   │   │   ├── RecentActivityLog.tsx
+│   │   │   ├── TransactionHistory.tsx
+│   │   │   ├── TrialCountdown.tsx
+│   │   │   └── WatchlistPanel.tsx
+│   │   ├── mark6
+│   │   │   ├── BankerSelectionModal.tsx
+│   │   │   ├── CharacterCircle.tsx
+│   │   │   ├── CharacterData.ts
+│   │   │   ├── CharacterProfileModal.tsx
+│   │   │   ├── ColorSelectionModal.tsx
+│   │   │   ├── FrequencyChart.tsx
+│   │   │   ├── GamblingDisclaimer.tsx
+│   │   │   ├── IntuitionLevelModal.tsx
+│   │   │   ├── LotteryBall.tsx
+│   │   │   ├── MatrixBackground.tsx
+│   │   │   ├── PartnerSelectionModal.tsx
+│   │   │   ├── PatternIntensityModal.tsx
+│   │   │   ├── RiskIntensityModal.tsx
+│   │   │   └── SimulationPowerModal.tsx
+│   │   ├── report
+│   │   │   ├── AIReportCard.tsx
+│   │   │   ├── AISummaryCard.tsx
+│   │   │   ├── ActionSignalBadge.tsx
+│   │   │   ├── BullBearScenario.tsx
+│   │   │   ├── BullBearSummaryBox.tsx
+│   │   │   ├── CompactProbabilityDial.tsx
+│   │   │   ├── EnhancedAIAnalysis.tsx
+│   │   │   ├── ExecutiveThesis.tsx
+│   │   │   ├── FinancialMultiplesGrid.tsx
+│   │   │   ├── HorseLogoSVG.tsx
+│   │   │   ├── InvestmentRiskDisclosure.tsx
+│   │   │   ├── MACDIndicator.tsx
+│   │   │   ├── MarketDataSummary.tsx
+│   │   │   ├── PatternDictionary.tsx
+│   │   │   ├── PeerComparisonTable.tsx
+│   │   │   ├── PricePerformanceChart.tsx
+│   │   │   ├── ProbabilityDial.tsx
+│   │   │   ├── RSIGauge.tsx
+│   │   │   ├── RecommendationSidebar.tsx
+│   │   │   ├── ReportFooter.tsx
+│   │   │   ├── ReportHeader.tsx
+│   │   │   ├── SectorContext.tsx
+│   │   │   ├── StockSearchBar.tsx
+│   │   │   ├── StrategicVerdictBadge.tsx
+│   │   │   ├── StrategicVerdictCard.tsx
+│   │   │   └── VitalsBadge.tsx
+│   │   └── ui
+│   │       ├── accordion.tsx
+│   │       ├── alert-dialog.tsx
+│   │       ├── alert.tsx
+│   │       ├── aspect-ratio.tsx
+│   │       ├── avatar.tsx
+│   │       ├── badge.tsx
+│   │       ├── breadcrumb.tsx
+│   │       ├── button.tsx
+│   │       ├── calendar.tsx
+│   │       ├── card.tsx
+│   │       ├── carousel.tsx
+│   │       ├── chart.tsx
+│   │       ├── checkbox.tsx
+│   │       ├── collapsible.tsx
+│   │       ├── command.tsx
+│   │       ├── context-menu.tsx
+│   │       ├── dialog.tsx
+│   │       ├── drawer.tsx
+│   │       ├── dropdown-menu.tsx
+│   │       ├── form.tsx
+│   │       ├── hover-card.tsx
+│   │       ├── input-otp.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── menubar.tsx
+│   │       ├── navigation-menu.tsx
+│   │       ├── pagination.tsx
+│   │       ├── popover.tsx
+│   │       ├── progress.tsx
+│   │       ├── radio-group.tsx
+│   │       ├── resizable.tsx
+│   │       ├── scroll-area.tsx
+│   │       ├── select.tsx
+│   │       ├── separator.tsx
+│   │       ├── sheet.tsx
+│   │       ├── sidebar.tsx
+│   │       ├── skeleton.tsx
+│   │       ├── slider.tsx
+│   │       ├── sonner.tsx
+│   │       ├── switch.tsx
+│   │       ├── table.tsx
+│   │       ├── tabs.tsx
+│   │       ├── textarea.tsx
+│   │       ├── toast.tsx
+│   │       ├── toaster.tsx
+│   │       ├── toggle-group.tsx
+│   │       ├── toggle.tsx
+│   │       ├── tooltip.tsx
+│   │       └── use-toast.ts
+│   ├── contexts
+│   │   ├── LanguageContext.tsx
+│   │   └── ThemeModeContext.tsx
+│   ├── hooks
+│   │   ├── use-mobile.tsx
+│   │   ├── use-toast.ts
+│   │   ├── useCredits.tsx
+│   │   └── useWatchlist.tsx
+│   ├── index.css
+│   ├── integrations
+│   │   └── supabase
+│   │       ├── client.ts
+│   │       └── types.ts
+│   ├── lib
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── pages
+│   │   ├── AIStocks.tsx
+│   │   ├── About.tsx
+│   │   ├── ContactUs.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── Feedback.tsx
+│   │   ├── GenerateReport.tsx
+│   │   ├── Home.tsx
+│   │   ├── HowItWorks.tsx
+│   │   ├── Index.tsx
+│   │   ├── Mark6Game.tsx
+│   │   ├── Mark6Results.tsx
+│   │   ├── NotFound.tsx
+│   │   ├── PaymentSuccess.tsx
+│   │   ├── Pricing.tsx
+│   │   ├── Settings.tsx
+│   │   ├── StockReport.tsx
+│   │   ├── Unsubscribe.tsx
+│   │   └── Watchlist.tsx
+│   └── vite-env.d.ts
+├── structure.txt
+├── supabase
+│   ├── config.toml
+│   ├── functions
+│   │   ├── create-checkout
+│   │   │   └── index.ts
+│   │   ├── fetch-stock-data
+│   │   │   └── index.ts
+│   │   ├── send-bulk-promo
+│   │   │   └── index.ts
+│   │   ├── send-contact-email
+│   │   │   └── index.ts
+│   │   ├── send-promo-email
+│   │   │   └── index.ts
+│   │   └── stripe-webhook
+│   │       └── index.ts
+│   └── migrations
+│       ├── 20260113144736_72969110-61a5-4f1f-bcca-d7625a1e3fd9.sql
+│       ├── 20260114085334_1c4eac6d-b63a-490b-9ad1-1398108bfab5.sql
+│       ├── 20260114102622_518df3b1-556a-4c01-b017-ca55a5c4ed1a.sql
+│       ├── 20260120223302_f9109c5e-745c-4204-89e0-4c68bc44f786.sql
+│       ├── 20260120223727_09f4e4fd-58b1-44b2-9766-b3bb101ab79a.sql
+│       ├── 20260123175342_4d552223-f005-4579-b7e5-1ecb5f8a795c.sql
+│       ├── 20260124052252_7493bd30-bc3c-4b42-a37f-0454f310ecca.sql
+│       ├── 20260127153342_33a1d393-1d07-4d3a-80e1-b6427a40d5e9.sql
+│       ├── 20260214152323_2051cc9d-eedc-458e-87d3-2193fa887623.sql
+│       ├── 20260214161120_715d2714-1aec-4b36-b27f-a2092c10184e.sql
+│       ├── 20260214163331_d5b6b8f4-a1b7-40dd-9c66-5a56296e091b.sql
+│       ├── 20260214163718_2b83eae7-2baa-4308-a797-068e94cca2ed.sql
+│       ├── 20260525175436_38770bcf-2ecc-44df-8f54-1c745575e4c3.sql
+│       ├── 20260525175942_f0e5f1d4-7685-4dd3-b606-e0f01694682b.sql
+│       └── 20260525180019_68f3f5db-c9c1-4e02-b35c-7481efb78326.sql
+├── tailwind.config.ts
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+
+25 directories, 212 files

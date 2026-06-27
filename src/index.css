@@ -1,0 +1,430 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ──────────────────────────────────────────────
+       BASE LIGHT THEME  (Champagne / Ivory)
+       ────────────────────────────────────────────── */
+    --background: 42 60% 97%;          /* #FFFDF5 champagne white */
+    --foreground: 215 25% 17%;         /* Deep Navy #1E293B */
+
+    --card: 42 40% 95%;                /* warm off-white card */
+    --card-foreground: 215 25% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
+
+    --primary: 43 72% 52%;             /* Metallic Gold #D4AF37 */
+    --primary-foreground: 215 25% 17%;
+
+    --secondary: 42 30% 90%;
+    --secondary-foreground: 215 25% 17%;
+
+    --muted: 42 20% 92%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 43 72% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 42 20% 85%;
+    --input: 42 20% 88%;
+    --ring: 43 72% 52%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --gold: 43 72% 52%;
+    --gold-light: 43 80% 62%;
+    --dragon-red: 12 85% 55%;
+    --dragon-glow: 12 100% 60%;
+    --casino-green: 162 90% 20%;       /* #065F46 */
+    --casino-green-light: 152 80% 30%;
+    --navy: 215 25% 17%;               /* #1E293B */
+
+    --gradient-gold: linear-gradient(135deg, hsl(43 72% 52%), hsl(43 80% 62%));
+    --gradient-hero: linear-gradient(180deg, hsl(42 60% 97%) 0%, hsl(42 40% 93%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(42 40% 96%));
+    --gradient-dragon: linear-gradient(135deg, hsl(43 72% 52%), hsl(43 80% 62%));
+    --gradient-casino: linear-gradient(135deg, hsl(162 90% 20%), hsl(152 70% 25%));
+
+    --shadow-gold: 0 4px 30px -8px hsl(43 72% 52% / 0.25);
+    --shadow-dragon: 0 4px 30px -8px hsl(12 85% 55% / 0.2);
+    --shadow-card: 0 4px 20px -4px hsl(215 25% 17% / 0.08);
+
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+/* ──────────────────────────────────────────────
+   MODE-SPECIFIC OVERRIDES
+   ────────────────────────────────────────────── */
+
+/* STOCKS MODE – Gold Standard */
+html.mode-stocks {
+  --background: 42 60% 97%;
+  --foreground: 215 25% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 25% 17%;
+  --primary: 43 72% 52%;
+  --primary-foreground: 0 0% 100%;
+  --border: 43 40% 78%;
+  --muted: 42 20% 92%;
+  --muted-foreground: 215 15% 45%;
+}
+
+/* GAMES MODE – Sands Casino */
+html.mode-games {
+  --background: 162 90% 14%;          /* Deep casino green */
+  --foreground: 0 0% 97%;
+  --card: 162 60% 18%;
+  --card-foreground: 0 0% 97%;
+  --primary: 43 80% 55%;              /* Vibrant Gold */
+  --primary-foreground: 162 90% 10%;
+  --border: 152 40% 28%;
+  --muted: 162 40% 22%;
+  --muted-foreground: 0 0% 70%;
+  --accent: 43 80% 55%;
+  --accent-foreground: 162 90% 10%;
+  --popover: 162 60% 16%;
+  --popover-foreground: 0 0% 97%;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+
+  .text-gradient-dragon {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-dragon);
+  }
+
+  .bg-gradient-gold {
+    background-image: var(--gradient-gold);
+  }
+
+  .bg-gradient-hero {
+    background-image: var(--gradient-hero);
+  }
+
+  .bg-gradient-card {
+    background-image: var(--gradient-card);
+  }
+
+  .bg-gradient-dragon {
+    background-image: var(--gradient-dragon);
+  }
+
+  .bg-gradient-casino {
+    background-image: var(--gradient-casino);
+  }
+
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+
+  .shadow-dragon {
+    box-shadow: var(--shadow-dragon);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .glow-gold {
+    filter: drop-shadow(0 0 20px hsl(43 72% 52% / 0.4));
+  }
+
+  .glow-dragon {
+    filter: drop-shadow(0 0 25px hsl(12 85% 55% / 0.4));
+  }
+
+  /* Glassmorphism */
+  .glass {
+    background: hsl(0 0% 100% / 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(0 0% 100% / 0.3);
+  }
+
+  .glass-dark {
+    background: hsl(0 0% 0% / 0.3);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(0 0% 100% / 0.1);
+  }
+
+  /* Gold border for stock cards */
+  .gold-border {
+    border: 1px solid hsl(43 72% 52% / 0.4);
+  }
+
+  /* Casino felt texture */
+  .felt-texture {
+    background-image: 
+      radial-gradient(ellipse at 50% 50%, transparent 0%, hsl(162 90% 14% / 0.3) 100%),
+      url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h6v6H0z' fill='none'/%3E%3Cpath d='M3 0v6M0 3h6' stroke='%23ffffff' stroke-width='0.3' opacity='0.04'/%3E%3C/svg%3E");
+    box-shadow: inset 0 2px 12px hsl(0 0% 0% / 0.3);
+  }
+
+  /* Screensaver-style bounce animations */
+  @keyframes bounce-x-1 {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(calc(100vw - 140px)); }
+  }
+  
+  @keyframes bounce-y-1 {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(calc(100vh - 200px)); }
+  }
+  
+  @keyframes bounce-x-2 {
+    0%, 100% { transform: translateX(calc(100vw - 140px)); }
+    50% { transform: translateX(0); }
+  }
+  
+  @keyframes bounce-y-2 {
+    0%, 100% { transform: translateY(calc(100vh - 200px)); }
+    50% { transform: translateY(0); }
+  }
+  
+  @keyframes card-pulse {
+    0%, 100% { scale: 1; }
+    50% { scale: 1.05; }
+  }
+  
+  .animate-screensaver-1 {
+    animation: bounce-x-1 23s linear infinite, card-pulse 3s ease-in-out infinite;
+  }
+  
+  .animate-screensaver-1 > * {
+    animation: bounce-y-1 17s linear infinite;
+  }
+  
+  .animate-screensaver-2 {
+    animation: bounce-x-2 19s linear infinite, card-pulse 3.5s ease-in-out infinite;
+  }
+  
+  .animate-screensaver-2 > * {
+    animation: bounce-y-2 13s linear infinite;
+  }
+}
+
+/* Keyframe animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes float-anim {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Glowing Pulse Animation for Top-Up Button */
+@keyframes glow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px -3px rgba(34, 197, 94, 0.5), 0 0 25px -5px rgba(34, 197, 94, 0.3);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 25px -3px rgba(34, 197, 94, 0.8), 0 0 40px -5px rgba(34, 197, 94, 0.5);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float-anim 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Neon Pulse Animation for 0 Credits */
+@keyframes neon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px 2px rgba(34, 197, 94, 0.8), 0 0 20px 4px rgba(34, 197, 94, 0.6), 0 0 40px 8px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 20px 6px rgba(74, 222, 128, 1), 0 0 40px 12px rgba(34, 197, 94, 1), 0 0 80px 24px rgba(34, 197, 94, 0.6);
+  }
+}
+
+.animate-urgent-glow {
+  animation: neon-pulse 1s ease-in-out infinite;
+  background: linear-gradient(135deg, #22C55E, #4ADE80, #22C55E) !important;
+  background-size: 200% 200%;
+}
+
+/* Coffee Plan Warm Glow */
+@keyframes coffee-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px 0px rgba(217, 119, 6, 0.4), 0 0 30px 0px rgba(146, 64, 14, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px 5px rgba(217, 119, 6, 0.6), 0 0 50px 10px rgba(146, 64, 14, 0.4);
+  }
+}
+
+.animate-coffee-glow {
+  animation: coffee-glow 2s ease-in-out infinite;
+}
+
+/* VIP Card Glowing Gold Border */
+@keyframes vip-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px 0px rgba(212, 175, 55, 0.4), 0 0 40px 0px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px 5px rgba(212, 175, 55, 0.6), 0 0 60px 10px rgba(212, 175, 55, 0.3);
+  }
+}
+
+.animate-vip-glow {
+  animation: vip-glow 2s ease-in-out infinite;
+}
+
+/* Gold Shimmer Animation for VIP Button */
+@keyframes gold-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-gold-shimmer {
+  background-size: 200% auto;
+  background-image: linear-gradient(90deg, #D4AF37 0%, #F0D78C 25%, #D4AF37 50%, #F0D78C 75%, #D4AF37 100%);
+  animation: gold-shimmer 3s linear infinite;
+}
+
+/* Full-screen floating animation */
+@keyframes float-screen {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(calc(50vw - 150px), calc(10vh)); }
+  20% { transform: translate(calc(65vw - 150px), calc(45vh)); }
+  30% { transform: translate(calc(30vw - 150px), calc(60vh)); }
+  40% { transform: translate(calc(10vw), calc(40vh)); }
+  50% { transform: translate(calc(55vw - 150px), calc(55vh)); }
+  60% { transform: translate(calc(70vw - 150px), calc(20vh)); }
+  70% { transform: translate(calc(20vw), calc(50vh)); }
+  80% { transform: translate(calc(45vw - 150px), calc(15vh)); }
+  90% { transform: translate(calc(60vw - 150px), calc(35vh)); }
+  100% { transform: translate(0, 0); }
+}
+
+.animate-float-screen {
+  animation: float-screen 80s ease-in-out infinite;
+}
+
+/* Roulette pattern for casino hero */
+.casino-roulette-bg {
+  background-image: 
+    radial-gradient(circle at 50% -20%, hsl(43 80% 55% / 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, hsl(43 80% 55% / 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 20% 80%, hsl(152 80% 30% / 0.08) 0%, transparent 40%),
+    conic-gradient(from 0deg at 50% 50%, 
+      hsl(0 70% 45% / 0.06) 0deg, hsl(162 90% 20% / 0.03) 5.14deg,
+      hsl(0 0% 0% / 0.06) 10.28deg, hsl(0 70% 45% / 0.06) 15.42deg,
+      hsl(162 90% 20% / 0.03) 20.57deg, hsl(0 0% 0% / 0.06) 25.71deg,
+      hsl(0 70% 45% / 0.06) 30.86deg, hsl(162 90% 20% / 0.03) 36deg,
+      hsl(0 0% 0% / 0.06) 41.14deg, hsl(0 70% 45% / 0.06) 46.28deg,
+      hsl(162 90% 20% / 0.03) 360deg
+    );
+}
+
+@layer components {
+  .btn-hero {
+    @apply relative overflow-hidden px-4 py-2 font-semibold text-sm rounded-lg transition-all duration-300;
+    background-image: var(--gradient-gold);
+    color: hsl(var(--navy));
+  }
+
+  .btn-hero::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsl(43 80% 62%), hsl(43 72% 52%));
+  }
+
+  .btn-hero:hover::before {
+    @apply opacity-100;
+  }
+
+  .btn-hero:hover {
+    @apply shadow-gold scale-105;
+  }
+
+  .btn-secondary-hero {
+    @apply px-4 py-2 font-semibold text-sm rounded-lg border-2 transition-all duration-300;
+    border-color: hsl(var(--gold));
+    color: hsl(var(--gold));
+  }
+
+  .btn-secondary-hero:hover {
+    background-color: hsl(var(--gold) / 0.1);
+    @apply shadow-gold;
+  }
+}

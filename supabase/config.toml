@@ -1,0 +1,16 @@
+project_id = "rfraspdzgzvkoiwecewr"
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.send-promo-email]
+verify_jwt = false
+
+[functions.send-bulk-promo]
+verify_jwt = false

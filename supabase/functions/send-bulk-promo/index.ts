@@ -1,0 +1,161 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const ADMIN_EMAILS = ["dragongpai@gmail.com"];
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Verify auth
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userEmail = claimsData.claims.email as string;
+    if (!ADMIN_EMAILS.includes(userEmail)) {
+      return new Response(JSON.stringify({ error: "Forbidden: Admin only" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Fetch all profiles with emails using service role
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: profiles, error: profilesError } = await serviceClient
+      .from("profiles")
+      .select("email")
+      .not("email", "is", null);
+
+    if (profilesError) {
+      return new Response(JSON.stringify({ error: "Failed to fetch profiles", details: profilesError }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      return new Response(JSON.stringify({ error: "Missing RESEND_API_KEY" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const emails = profiles?.map((p) => p.email).filter(Boolean) as string[];
+    let sent = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (let i = 0; i < emails.length; i++) {
+      const email = emails[i];
+      // Resend allows max 2 requests/sec; wait 600ms between sends
+      if (i > 0) await new Promise((r) => setTimeout(r, 600));
+      try {
+        const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .container { max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 12px; overflow: hidden; }
+  .header { text-align: center; padding: 32px 24px 16px; background: linear-gradient(90deg, #B8860B 0%, #FFD700 50%, #B8860B 100%); }
+  .header h1 { margin: 0; color: #1a1a1a; font-size: 22px; font-weight: 800; }
+  .body-content { padding: 32px 24px; color: #E0E0E0; }
+  .body-content h2 { color: #FFD700; font-size: 18px; margin-top: 24px; }
+  .body-content p { line-height: 1.7; font-size: 15px; }
+  .body-content ul { padding-left: 20px; }
+  .body-content li { margin-bottom: 8px; line-height: 1.6; }
+  .cta-button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #FF4444 0%, #FFD700 100%); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin: 24px 0; box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3); }
+  .footer { text-align: center; padding: 24px; color: #666; font-size: 12px; border-top: 1px solid rgba(255, 215, 0, 0.1); }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>🧧 DragonGP Lunar Valentine's: Your 10-Day Free AI Pass!</h1></div>
+    <div class="body-content">
+      <p>Dear Explorer,</p>
+      <p>To celebrate the <strong>Lunar New Year</strong> and <strong>Valentine's Day</strong>, we are opening the "Mental Gym" for everyone!</p>
+      <p>For the next 10 days, you have <strong>Full Access</strong> to our new AI Probability Reports. We have credited your account with <strong>10 Free Analysis Credits</strong>.</p>
+      <h2>🐉 What's New?</h2>
+      <ul>
+        <li><strong>Meet the 5 AI Partners</strong> — each with different mathematical probability modules.</li>
+        <li><strong>AI Stocks & Games</strong> — Explore mathematical simulations for your favorite indices and Mark 6.</li>
+        <li><strong>Member Dashboard</strong> — Track your history and watchlist with our new prestige terminal.</li>
+      </ul>
+      <div style="text-align: center;">
+        <a href="https://dragonmind-rewire.lovable.app/dashboard" class="cta-button">🎁 Claim My 10 Free Credits</a>
+      </div>
+      <p style="font-size: 13px; color: #999; margin-top: 24px;">
+        Happy exploring, and may the probabilities be in your favor!<br>
+        <strong>The DragonGP Team</strong><br>dragonpgai@gmail.com
+      </p>
+    </div>
+    <div class="footer">
+      <p>© 2026 DragonGP AI. This is a promotional email for the Lunar Valentine's Free Trial.</p>
+      <p>You're receiving this because you have a DragonGP account.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: "DragonGP AI <onboarding@resend.dev>",
+            to: [email],
+            subject: "🐉 DragonGP Lunar Valentine's: Your 10-Day Free AI Pass!",
+            html: htmlBody,
+          }),
+        });
+
+        if (res.ok) {
+          sent++;
+        } else {
+          const err = await res.json();
+          failed++;
+          errors.push(`${email}: ${JSON.stringify(err)}`);
+        }
+      } catch (e) {
+        failed++;
+        errors.push(`${email}: ${e.message}`);
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, sent, failed, total: emails.length, errors: errors.slice(0, 5) }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
