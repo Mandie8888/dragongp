@@ -301,8 +301,8 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
       shareWhatsApp: "Check out my AI-generated lucky numbers from DragonGP! Try it here:",
       goToStocks: "Go to AI Stocks Probability",
       gameLabel: "Game",
-      listenReport: "Listen to Report",
-      stopVoice: "Stop Voice",
+      listenReport: "Use of Methodology",  // ✅ Changed from "Listen to Report"
+    stopVoice: "Stop Voice",
     },
     "zh-TW": {
       processing: "AI 處理中...",
@@ -335,8 +335,8 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
       goToStocks: "前往 AI 股票概率分析",
       shareWhatsApp: "看看我用 DragonGP AI 生成的幸運號碼！在這裡試試:",
       gameLabel: "遊戲",
-      listenReport: "收聽報告",
-      stopVoice: "停止語音",
+      listenReport: "使用計算方法",  // ✅ Changed to "使用計算方法"
+    stopVoice: "停止語音",
     },
     "zh-CN": {
       processing: "AI 处理中...",
@@ -369,8 +369,8 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
       goToStocks: "前往 AI 股票概率分析",
       shareWhatsApp: "看看我用 DragonGP AI 生成的幸运号码！在这里试试:",
       gameLabel: "游戏",
-      listenReport: "收听报告",
-      stopVoice: "停止语音",
+      listenReport: "使用计算方法",  // ✅ Changed to "使用计算方法"
+    stopVoice: "停止语音",
     },
   };
 

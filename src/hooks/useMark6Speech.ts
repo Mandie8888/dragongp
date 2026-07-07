@@ -14,7 +14,7 @@ export const useMark6Speech = (options: Mark6SpeechOptions) => {
     speak(text);
   };
 
-  // Welcome message for Mark6 Game - SHORT
+  // Welcome message for Mark6 Game
   const speakWelcome = (gameType: 'hk' | 'tw') => {
     const gameName = gameType === 'tw' ? '台灣大樂透' : '香港六合彩';
     
@@ -28,7 +28,7 @@ export const useMark6Speech = (options: Mark6SpeechOptions) => {
     speakSimple(message);
   };
 
-  // Partner introduction - ONLY METHOD NAME
+  // Partner introduction - ONLY METHOD NAME (WORKING VERSION)
   const speakPartnerIntro = (partnerId: string) => {
     const methodNames: Record<string, Record<string, string>> = {
       'en': {
@@ -59,7 +59,10 @@ export const useMark6Speech = (options: Mark6SpeechOptions) => {
     speakSimple(message);
   };
 
-  // NO PREDICTION SUMMARY - removed entirely
+  // Prediction summary - DISABLED (kept as empty function for compatibility)
+  const speakPredictionSummary = (numbers: number[][]) => {
+    // Intentionally empty - this avoids the cut-off issue
+  };
 
   // Get partner method name (for display)
   const getPartnerMethod = (partnerId: string, language: string): string => {
@@ -92,7 +95,7 @@ export const useMark6Speech = (options: Mark6SpeechOptions) => {
     return isChinese ? name.zh : name.en;
   };
 
-  // Combined voice function - ONLY method name, no prediction summary
+  // Combined voice function - ONLY method name (no prediction summary)
   const speakFullReport = (partnerId: string) => {
     speakPartnerIntro(partnerId);
   };
@@ -100,7 +103,7 @@ export const useMark6Speech = (options: Mark6SpeechOptions) => {
   return {
     speakWelcome,
     speakPartnerIntro,
-    speakPredictionSummary: () => {}, // Empty function - no longer used
+    speakPredictionSummary,
     speakFullReport,
     getPartnerMethod,
     getPartnerName,
