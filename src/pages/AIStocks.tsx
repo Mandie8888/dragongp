@@ -146,8 +146,15 @@ export default function AIStocks() {
   const [isAnalysisComplete, setIsAnalysisComplete] = useState(false);
 
   // Speak welcome message
-  // Speak welcome message with more detail
+ const [isSpeaking, setIsSpeaking] = useState(false);
 const speakWelcome = () => {
+  // Prevent multiple simultaneous speech
+  if (isSpeaking) {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    return;
+  }
+
   const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
   const isChinese = lang === 'zh';
   
@@ -159,6 +166,11 @@ const speakWelcome = () => {
   utterance.lang = language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US';
   utterance.rate = 0.85;
   utterance.pitch = 1;
+  
+  utterance.onstart = () => setIsSpeaking(true);
+  utterance.onend = () => setIsSpeaking(false);
+  utterance.onerror = () => setIsSpeaking(false);
+  
   window.speechSynthesis.speak(utterance);
 };
 
@@ -470,15 +482,27 @@ const speakWelcome = () => {
             />
             
             {/* Speaker Button - Always visible */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-10 w-10"
-              onClick={speakWelcome}
-              title="Read welcome message"
-            >
-              <Volume2 className="h-4 w-4" />
-            </Button>
+            {/* Speaker Button - Toggle on/off */}
+<Button
+  variant="outline"
+  size="icon"
+  className="h-10 w-10"
+  onClick={() => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    } else {
+      speakWelcome();
+    }
+  }}
+  title={isSpeaking ? "Stop speaking" : "Read welcome message"}
+>
+  {isSpeaking ? (
+    <VolumeX className="h-4 w-4 text-red-500" />
+  ) : (
+    <Volume2 className="h-4 w-4" />
+  )}
+</Button>
             
             <GatewaySelector variant="minimal" />
             <QuickAddButton className="h-10" />

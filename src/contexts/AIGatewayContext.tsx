@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type AIGateway = 'OPENAI' | 'GEMINI' | 'CLAUDE' | 'LOCAL';
+export type AIGateway = 'OPENAI' | 'GEMINI' | 'DEEPSEEK' | 'LOCAL';
 
 export interface AIGatewayConfig {
   id: AIGateway;
@@ -21,21 +21,21 @@ export const GATEWAY_CONFIGS: AIGatewayConfig[] = [
   {
     id: 'GEMINI',
     label: 'Google Gemini',
-    description: '免費備用方案',
+    description: 'Google AI 分析',
     icon: '✨',
     enabled: true,
   },
   {
-    id: 'CLAUDE',
-    label: 'Claude',
-    description: '深度分析專用',
+    id: 'DEEPSEEK',
+    label: 'DeepSeek',
+    description: '深度求索 AI',
     icon: '🧠',
     enabled: true,
   },
   {
     id: 'LOCAL',
     label: '本地 LLM',
-    description: '使用本地模型 (Ollama)',
+    description: '使用本地模型 (Ollama) - 推薦',
     icon: '💻',
     enabled: true,
   },
@@ -52,9 +52,9 @@ const AIGatewayContext = createContext<AIGatewayContextType | undefined>(undefin
 
 export const AIGatewayProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentGateway, setCurrentGateway] = useState<AIGateway>(() => {
-    const saved = localStorage.getItem('preferred_gateway') as AIGateway;
-    return saved && GATEWAY_CONFIGS.some(g => g.id === saved) ? saved : 'OPENAI';
-  });
+  const saved = localStorage.getItem('preferred_gateway') as AIGateway;
+  return saved && GATEWAY_CONFIGS.some(g => g.id === saved) ? saved : 'LOCAL';
+});
 
   useEffect(() => {
     localStorage.setItem('preferred_gateway', currentGateway);
