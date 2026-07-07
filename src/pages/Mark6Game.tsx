@@ -19,10 +19,13 @@ import { PatternIntensityModal } from "@/components/mark6/PatternIntensityModal"
 import { SimulationPowerModal } from "@/components/mark6/SimulationPowerModal";
 import { IntuitionLevelModal } from "@/components/mark6/IntuitionLevelModal";
 import { characters, Character } from "@/components/mark6/CharacterData";
-import { Loader2, Play, Sparkles, Zap, TrendingUp } from "lucide-react";
+import { Loader2, Play, Sparkles, Zap, TrendingUp, Volume2, VolumeX, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import goddessImg from "@/assets/characters/goddess-of-fortune.png";
 import InlineLanguageSwitcher from "@/components/InlineLanguageSwitcher";
+import { useMark6Speech } from "@/hooks/useMark6Speech";
+
+type GameType = "hk" | "tw";
 
 export default function Mark6Game() {
   const navigate = useNavigate();
@@ -43,6 +46,7 @@ export default function Mark6Game() {
   const [showPartnerSelection, setShowPartnerSelection] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Character | null>(null);
+  const [selectedGame, setSelectedGame] = useState<GameType>("hk");
   
   // Partner-specific selection modals
   const [showBankerSelection, setShowBankerSelection] = useState(false);
@@ -62,9 +66,14 @@ export default function Mark6Game() {
     intuitionLevel?: number;
   }>({});
 
+  // Voice controls
+  const { speakWelcome, isSpeaking, stop, isSupported } = useMark6Speech({ 
+  lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
+});
+
   const content = {
     en: {
-      title: "AI Mark6 Game Probability",
+      title: "AI Lottery Probability",
       subtitle: "Choose Your AI Partner for Probability Analysis",
       funnyStatement: "Which genius shall guide your luck today?",
       funnyStatementCn: "今天哪位天才為你指點迷津？",
@@ -76,9 +85,14 @@ export default function Mark6Game() {
       partnersTitle: "AI Partners",
       clickToView: "Click any partner to view their profile",
       poweredBy: "Powered by Dragon AI",
+      hkLotto: "HK Mark 6",
+      twLotto: "Taiwan Lotto",
+      selectGame: "Select Your Game",
+      voiceWelcome: "Listen to Welcome",
+      stopVoice: "Stop Voice",
     },
     "zh-TW": {
-      title: "AI 六合神器 或然率",
+      title: "AI 六合樂透 或然率",
       subtitle: "選擇您的 AI 夥伴進行概率分析",
       funnyStatement: "Which genius shall guide your luck today?",
       funnyStatementCn: "今天哪位天才為你指點迷津？",
@@ -90,9 +104,14 @@ export default function Mark6Game() {
       partnersTitle: "AI 夥伴",
       clickToView: "點擊任何夥伴查看其簡介",
       poweredBy: "由 Dragon AI 驅動",
+      hkLotto: "六合香港",
+      twLotto: "樂透台灣",
+      selectGame: "選擇您的遊戲",
+      voiceWelcome: "收聽歡迎語",
+      stopVoice: "停止語音",
     },
     "zh-CN": {
-      title: "AI 六合神器 或然率",
+      title: "AI 六合乐透 或然率",
       subtitle: "选择您的 AI 伙伴进行概率分析",
       funnyStatement: "Which genius shall guide your luck today?",
       funnyStatementCn: "今天哪位天才为你指点迷津？",
@@ -104,6 +123,11 @@ export default function Mark6Game() {
       partnersTitle: "AI 伙伴",
       clickToView: "点击任何伙伴查看其简介",
       poweredBy: "由 Dragon AI 驱动",
+      hkLotto: "六合香港",
+      twLotto: "乐透台湾",
+      selectGame: "选择您的游戏",
+      voiceWelcome: "收听欢迎语",
+      stopVoice: "停止语音",
     },
   };
 
@@ -136,26 +160,21 @@ export default function Mark6Game() {
     } else if (partner.id === "aladdin") {
       setShowColorSelection(true);
     } else if (partner.id === "god-of-gambling") {
-      // God of Gambling gets the unique Pattern Intensity modal
       setShowPatternIntensity(true);
     } else if (partner.id === "lucky-star") {
-      // Lucky Star gets the Simulation Power modal
       setShowSimulationPower(true);
     } else if (partner.id === "achelois") {
-      // Achelois gets the Intuition Level modal
       setShowIntuitionLevel(true);
     } else {
-      // Fallback - show risk/intensity slider
       setShowRiskIntensity(true);
     }
   };
 
   const handleBankerConfirm = async (bankers: number[]) => {
-    // Consume credit immediately when clicking "Generate AI Prediction"
     const success = await consumeCredit();
     if (!success) {
       setShowBankerSelection(false);
-      return; // Credit consumption failed or out of credits
+      return;
     }
     setUserSelections({ ...userSelections, bankers });
     setShowBankerSelection(false);
@@ -163,7 +182,6 @@ export default function Mark6Game() {
   };
 
   const handleColorConfirm = async (colorRatio: string) => {
-    // Consume credit immediately when clicking "Generate AI Prediction"
     const success = await consumeCredit();
     if (!success) {
       setShowColorSelection(false);
@@ -175,7 +193,6 @@ export default function Mark6Game() {
   };
 
   const handleIntensityConfirm = async (intensity: number) => {
-    // Consume credit immediately when clicking "Generate AI Prediction"
     const success = await consumeCredit();
     if (!success) {
       setShowRiskIntensity(false);
@@ -187,7 +204,6 @@ export default function Mark6Game() {
   };
 
   const handlePatternConfirm = async (pattern: string) => {
-    // Consume credit immediately when clicking "Generate AI Prediction"
     const success = await consumeCredit();
     if (!success) {
       setShowPatternIntensity(false);
@@ -199,7 +215,6 @@ export default function Mark6Game() {
   };
 
   const handleSimulationConfirm = async (stars: number) => {
-    // Consume credit immediately when clicking "Generate AI Prediction"
     const success = await consumeCredit();
     if (!success) {
       setShowSimulationPower(false);
@@ -211,7 +226,6 @@ export default function Mark6Game() {
   };
 
   const handleIntuitionConfirm = async (level: number) => {
-    // Consume credit immediately when clicking "Generate AI Prediction"
     const success = await consumeCredit();
     if (!success) {
       setShowIntuitionLevel(false);
@@ -224,8 +238,9 @@ export default function Mark6Game() {
 
   const handleDisclaimerAccept = () => {
     setShowDisclaimer(false);
-    // Navigate with selections
+    // Navigate with selections including game type
     const params = new URLSearchParams();
+    params.set("game", selectedGame);
     params.set("partner", selectedPartner?.id || "");
     if (userSelections.bankers) {
       params.set("bankers", userSelections.bankers.join(","));
@@ -264,22 +279,42 @@ export default function Mark6Game() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background casino-roulette-bg">
-      {/* Matrix Background */}
       <MatrixBackground />
       
       <Navbar />
       
-      {/* Main Content */}
       <main className="flex-1 pt-16 pb-4 relative z-10">
         <div className="container mx-auto px-4">
           
-          {/* Header */}
+          {/* Header with Voice Button */}
           <div className="text-center mb-3">
-            <h1 className="text-2xl md:text-3xl font-black tracking-wider mb-1 text-primary font-display"
-              style={{ textShadow: "0 0 30px hsl(43 80% 55% / 0.5)" }}
-            >
-              {t.title}
-            </h1>
+            <div className="flex items-center justify-center gap-3 mb-1">
+              <h1 className="text-2xl md:text-3xl font-black tracking-wider text-primary font-display"
+                style={{ textShadow: "0 0 30px hsl(43 80% 55% / 0.5)" }}
+              >
+                {t.title}
+              </h1>
+              {/* Voice Button */}
+              {isSupported && (
+                <button
+                  onClick={() => {
+                    if (isSpeaking) {
+                      stop();
+                    } else {
+                      speakWelcome(selectedGame);
+                    }
+                  }}
+                  className="p-2 rounded-full hover:bg-primary/10 transition-colors"
+                  title={isSpeaking ? t.stopVoice : t.voiceWelcome}
+                >
+                  {isSpeaking ? (
+                    <VolumeX className="w-5 h-5 text-primary" />
+                  ) : (
+                    <Volume2 className="w-5 h-5 text-primary" />
+                  )}
+                </button>
+              )}
+            </div>
             <div className="mb-2">
               <InlineLanguageSwitcher />
             </div>
@@ -308,6 +343,34 @@ export default function Mark6Game() {
               </div>
             </div>
           )}
+
+          {/* Game Selection Toggle */}
+          <div className="flex justify-center mb-4">
+            <div className="flex gap-2 bg-card/50 p-1.5 rounded-xl border border-border">
+              <button
+                onClick={() => setSelectedGame("hk")}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                  selectedGame === "hk"
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md"
+                    : "text-foreground/60 hover:text-foreground"
+                }`}
+              >
+                <Trophy className="w-4 h-4 inline mr-1.5" />
+                {t.hkLotto}
+              </button>
+              <button
+                onClick={() => setSelectedGame("tw")}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                  selectedGame === "tw"
+                    ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md"
+                    : "text-foreground/60 hover:text-foreground"
+                }`}
+              >
+                <Trophy className="w-4 h-4 inline mr-1.5" />
+                {t.twLotto}
+              </button>
+            </div>
+          </div>
 
           {/* Funny Statement Bubble */}
           <div className="flex justify-center mb-3">

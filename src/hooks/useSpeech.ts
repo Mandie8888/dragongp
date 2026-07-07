@@ -13,7 +13,7 @@ interface UseSpeechOptions {
 export const useSpeech = (options: UseSpeechOptions = {}) => {
   const {
     lang = 'zh-HK',
-    rate = 1,
+    rate = 0.9,
     pitch = 1,
     volume = 1,
     onStart,
@@ -25,20 +25,20 @@ export const useSpeech = (options: UseSpeechOptions = {}) => {
   const [isPaused, setIsPaused] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const queueRef = useRef<string[]>([]);
+  const isProcessingQueue = useRef(false);
 
-  const speak = useCallback((text: string, immediate = true) => {
-    if (!window.speechSynthesis) {
-      onError?.(new Error('Speech synthesis not supported'));
+  // Define processQueue first so it's available when speak is called
+  const processQueue = useCallback(() => {
+    if (queueRef.current.length === 0) {
+      isProcessingQueue.current = false;
+      setIsSpeaking(false);
       return;
     }
 
-    if (immediate) {
-      window.speechSynthesis.cancel();
-      queueRef.current = [];
-    }
-
-    if (window.speechSynthesis.speaking && !isPaused) {
-      queueRef.current.push(text);
+    isProcessingQueue.current = true;
+    const text = queueRef.current.shift();
+    if (!text) {
+      processQueue();
       return;
     }
 
@@ -58,24 +58,49 @@ export const useSpeech = (options: UseSpeechOptions = {}) => {
       setIsSpeaking(false);
       setIsPaused(false);
       onEnd?.();
-
-      if (queueRef.current.length > 0) {
-        const nextText = queueRef.current.shift();
-        if (nextText) {
-          speak(nextText, true);
-        }
-      }
+      // Process next item in queue after a small delay
+      setTimeout(() => {
+        processQueue();
+      }, 200);
     };
 
     utterance.onerror = (event) => {
+      console.warn('Speech error:', event);
       setIsSpeaking(false);
       setIsPaused(false);
-      onError?.(new Error(event.error));
+      // Continue to next item on error
+      setTimeout(() => {
+        processQueue();
+      }, 200);
     };
 
     utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [lang, rate, pitch, volume, onStart, onEnd, onError, isPaused]);
+  }, [lang, rate, pitch, volume, onStart, onEnd]);
+
+  // speak function uses processQueue
+  const speak = useCallback((text: string, immediate = true) => {
+    if (!window.speechSynthesis) {
+      onError?.(new Error('Speech synthesis not supported'));
+      return;
+    }
+
+    if (!text || text.trim().length === 0) {
+      return;
+    }
+
+    if (immediate) {
+      window.speechSynthesis.cancel();
+      queueRef.current = [];
+      isProcessingQueue.current = false;
+    }
+
+    queueRef.current.push(text);
+
+    if (!isProcessingQueue.current) {
+      processQueue();
+    }
+  }, [onError, processQueue]);
 
   const pause = useCallback(() => {
     if (window.speechSynthesis.speaking) {
@@ -94,6 +119,7 @@ export const useSpeech = (options: UseSpeechOptions = {}) => {
   const stop = useCallback(() => {
     window.speechSynthesis.cancel();
     queueRef.current = [];
+    isProcessingQueue.current = false;
     setIsSpeaking(false);
     setIsPaused(false);
     utteranceRef.current = null;
