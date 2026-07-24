@@ -561,10 +561,10 @@ export default function Mark6Results() {
               {/* Facebook Share Button */}
               <FacebookShareButton 
                 url={window.location.href}
-                quote={`My AI-generated lucky numbers from DragonGP! 🎰 ${partner?.name?.[language] || ''} predicted: ${predictions[0]?.join(', ') || ''}`}
+                quote={`My AI-generated lucky numbers from DragonGP! 🎰 ${partner?.name?.[language] || partner?.name?.en || 'AI'} predicted: ${predictions[0]?.join(', ') || '...'}`}
                 size="sm"
                 showText={false}
-                className="print:hidden"
+                className="h-8 w-8 p-0"
               />
             </div>
 
