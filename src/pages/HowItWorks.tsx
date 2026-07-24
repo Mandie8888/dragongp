@@ -2,207 +2,295 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Brain, TrendingUp, Activity, Shield, Sparkles, Zap, Moon, Star, Dice6 } from "lucide-react";
+import { 
+  ArrowLeft, Brain, TrendingUp, Activity, Shield, Sparkles, 
+  Zap, Moon, Star, Dice6, Volume2, VolumeX, Play, 
+  Info, CheckCircle, ArrowRight, Bot, Mic, BarChart3,
+  Crown, Rocket, Target, Award, Gem
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const translations = {
   en: {
     pageTitle: "How It Works",
     backHome: "Back to Home",
+    listenPage: "🔊 Listen to Page",
+    stopListening: "⏹ Stop",
     
     // Choice Gateway
     chooseYourPath: "Choose Your Path",
-    mark6CardTitle: "Science of Luck",
+    mark6CardTitle: "🎰 Science of Luck",
     mark6CardSubtitle: "Mark6 AI Methodology",
-    stockCardTitle: "Logic of Markets",
+    stockCardTitle: "📈 Logic of Markets",
     stockCardSubtitle: "Stock AI Methodology",
+    explore: "Explore →",
+    
+    // How It Works Flow
+    flowTitle: "⚡ Get Started in 3 Simple Steps",
+    flowStep1: "Choose Your AI Partner",
+    flowStep1Desc: "Select from 5 unique AI models, each with a distinct mathematical approach.",
+    flowStep2: "Configure & Analyze",
+    flowStep2Desc: "Set your preferences and let the AI run advanced simulations.",
+    flowStep3: "Get Insights",
+    flowStep3Desc: "Receive your personalized prediction report with recommended numbers.",
     
     // Mark6 Section
-    mark6Title: "Mark6 AI Methodology",
-    mark6Subtitle: "Our AI Mark6 engine combines mathematical models with entertainment-focused predictions. This is purely for fun and entertainment purposes only.",
+    mark6Title: "🎲 Mark6 AI Methodology",
+    mark6Subtitle: "Where mathematics meets entertainment — our AI engine combines advanced statistical models with fun, engaging predictions.",
     
-    // 5 Characters
-    elonTitle: "Elon's Strategic Prediction",
-    elonMethod: "Banker & Leg Strategic Game Theory",
-    elonDesc: "This model applies strategic game theory to analyze banker-leg relationships, identifying patterns in historical draw data.",
+    // 5 Characters - Enhanced
+    elonTitle: "Elon's Strategic Vision",
+    elonMethod: "Banker & Leg Game Theory",
+    elonDesc: "Strategic game theory applied to identify optimal banker-leg relationships in historical draw patterns.",
+    elonTag: "🎯 Strategic",
     
-    godTitle: "God of Gambling's Divine Vision",
+    godTitle: "God of Gambling's Insight",
     godMethod: "Chaos Theory Logic",
-    godDesc: "This model identifies hidden structures within random draw data by analyzing historical air turbulence patterns.",
+    godDesc: "Advanced chaos theory algorithms that reveal hidden structures within random draw data.",
+    godTag: "🌀 Chaos",
     
-    aladdinTitle: "Aladdin's Magic Lamp",
+    aladdinTitle: "Aladdin's Quantum Wisdom",
     aladdinMethod: "Quantum Spooky Sync",
-    aladdinDesc: "Leveraging quantum entanglement principles, this model synchronizes with cosmic randomness to identify number correlations.",
+    aladdinDesc: "Quantum entanglement principles applied to synchronize with cosmic randomness and identify number correlations.",
+    aladdinTag: "⚛️ Quantum",
     
-    luckyTitle: "Lucky Star's Cosmic Fortune",
-    luckyMethod: "Monte Carlo Simulation Engine",
-    luckyDesc: "By running massive random iterations, this model identifies number clusters that statistically survive 1,000,000 virtual draws.",
+    luckyTitle: "Lucky Star's Fortune",
+    luckyMethod: "Monte Carlo Engine",
+    luckyDesc: "Massive random iterations (1,000,000+ virtual draws) to identify statistically significant number clusters.",
+    luckyTag: "⭐ Monte Carlo",
     
-    acheloisTitle: "Achelois's Moonlight Wisdom",
-    acheloisMethod: "Lunar Cycle Pattern Recognition",
-    acheloisDesc: "This model analyzes historical draws in relation to lunar phases, identifying patterns that correlate with moon cycles.",
+    acheloisTitle: "Achelois's Lunar Wisdom",
+    acheloisMethod: "Lunar Cycle Recognition",
+    acheloisDesc: "Lunar phase analysis revealing correlations between moon cycles and historical draw outcomes.",
+    acheloisTag: "🌙 Lunar",
     
-    mark6Disclaimer: "Entertainment Only: All predictions are generated for entertainment purposes. Gambling involves risk. Please play responsibly.",
+    mark6Disclaimer: "🎯 Entertainment Only: All predictions are generated for entertainment purposes. Please play responsibly.",
+    learnMore: "Learn More →",
     
-    // Stock Section
-    methodologyTitle: "AI Stock Analysis Methodology",
-    methodologySubtitle: "Our AI stock engine integrates deep learning with quantitative financial models to provide multi-dimensional market insights.",
+    // Stock Section - Enhanced
+    methodologyTitle: "📊 AI Stock Analysis Methodology",
+    methodologySubtitle: "Deep learning meets quantitative finance — our engine delivers multi-dimensional market insights.",
     
-    cnnTitle: "CNN Trend Analysis",
-    cnnDesc: "Analyzes candlestick visual patterns to identify market reversal signals and sustained trends.",
+    cnnTitle: "CNN Pattern Recognition",
+    cnnDesc: "Advanced candlestick pattern analysis to identify market reversal signals and sustained trends.",
+    cnnTag: "📊 Pattern",
     
-    sentimentTitle: "Sentiment Analysis Engine",
-    sentimentDesc: "Monitors global news and social media in real-time to quantify \"Fear & Greed\" regarding specific tickers.",
+    sentimentTitle: "Sentiment Intelligence",
+    sentimentDesc: "Real-time global news and social media monitoring to quantify market fear & greed.",
+    sentimentTag: "📰 Sentiment",
     
     volatilityTitle: "Volatility Prediction",
-    volatilityDesc: "Utilizes GARCH models to optimize risk control and forecast potential price ranges for the next 24 hours to 7 days.",
+    volatilityDesc: "GARCH models for optimal risk control and price range forecasting (24h to 7 days).",
+    volatilityTag: "📉 Risk",
     
-    fundamentalTitle: "Fundamental Quant",
-    fundamentalDesc: "Automatically parses financial reports and macroeconomic indicators to assess intrinsic value and growth potential.",
+    fundamentalTitle: "Fundamental Analysis",
+    fundamentalDesc: "Automated parsing of financial reports and macro indicators to assess intrinsic value.",
+    fundamentalTag: "💰 Value",
     
-    neutralTitle: "AI Stock Data Analysis Methodology",
-    neutralSubtitle: "This platform adheres to a principle of neutrality, aiming to transform professional AI technology into accessible data references. Final decisions should be made independently by the user.",
+    neutralSubtitle: "⚖️ Pure Data, Zero Bias — We provide transparent AI insights, you make the decisions.",
     
-    sentimentQuantTitle: "Sentiment Quantization",
-    sentimentQuantDesc: "Monitors market heat via AI without providing buy/sell advice, helping users identify \"Crowd Sentiment\".",
+    // Comparison Table - Enhanced
+    compareTitle: "⚔️ Mark6 vs Stocks: AI Approach Comparison",
+    compareFeature: "Feature",
+    compareMark6: "🎰 Mark6 AI",
+    compareStocks: "📈 Stocks AI",
+    compareData: "Data Source",
+    compareMark6Data: "Historical Draws (100+)",
+    compareStocksData: "Live Market + News",
+    compareModel: "Core Model",
+    compareMark6Model: "Monte Carlo + Probability",
+    compareStocksModel: "CNN + LSTM + GARCH",
+    compareOutput: "Output",
+    compareMark6Output: "10 Number Sets",
+    compareStocksOutput: "Price + Sentiment",
     
-    patternTitle: "Multi-dimensional Pattern Recognition",
-    patternDesc: "Uses CNN models to present \"statistical similarities\" in historical data rather than predicting future outcomes.",
-    
-    riskTitle: "Volatility Risk Assessment",
-    riskDesc: "Quantifies risk ranges using GARCH models to alert users to potential volatility and strengthen risk awareness."
+    // CTA Section
+    ctaTitle: "Ready to Explore?",
+    ctaSub: "Start your journey with AI-powered predictions today.",
+    ctaButton: "🚀 Get Started Now",
   },
   "zh-TW": {
     pageTitle: "運作原理",
     backHome: "返回首頁",
+    listenPage: "🔊 收聽頁面",
+    stopListening: "⏹ 停止",
     
-    // Choice Gateway
     chooseYourPath: "選擇您的路徑",
-    mark6CardTitle: "運氣的科學",
+    mark6CardTitle: "🎰 運氣的科學",
     mark6CardSubtitle: "六合彩 AI 運作原理",
-    stockCardTitle: "市場的邏輯",
+    stockCardTitle: "📈 市場的邏輯",
     stockCardSubtitle: "股票 AI 運作原理",
+    explore: "探索 →",
     
-    // Mark6 Section
-    mark6Title: "六合彩 AI 運作原理",
-    mark6Subtitle: "我們的 AI 六合彩引擎結合數學模型與娛樂導向預測。僅供娛樂用途。",
+    flowTitle: "⚡ 三步驟開始使用",
+    flowStep1: "選擇 AI 夥伴",
+    flowStep1Desc: "從 5 個獨特 AI 模型中選擇，每個都有不同的數學方法。",
+    flowStep2: "設定與分析",
+    flowStep2Desc: "設定您的偏好，讓 AI 執行高級模擬。",
+    flowStep3: "獲取洞見",
+    flowStep3Desc: "接收您的專屬預測報告與推薦號碼組合。",
     
-    // 5 Characters
-    elonTitle: "Elon 戰略預測",
+    mark6Title: "🎲 六合彩 AI 運作原理",
+    mark6Subtitle: "數學與娛樂的結合 — 我們的 AI 引擎結合先進統計模型與趣味預測。",
+    
+    elonTitle: "Elon 戰略視野",
     elonMethod: "莊閒博弈論",
-    elonDesc: "此模型應用策略博弈論分析莊閒關係，識別歷史開獎數據中的規律。",
+    elonDesc: "應用策略博弈論分析莊閒關係，識別歷史開獎數據中的最優規律。",
+    elonTag: "🎯 戰略",
     
-    godTitle: "賭神天眼",
+    godTitle: "賭神洞察",
     godMethod: "混沌理論邏輯",
-    godDesc: "此模型通過分析歷史氣流擾動模式，識別隨機開獎數據中的隱藏結構。",
+    godDesc: "先進的混沌理論演算法，揭示隨機開獎數據中的隱藏結構。",
+    godTag: "🌀 混沌",
     
-    aladdinTitle: "阿拉丁神燈",
+    aladdinTitle: "阿拉丁量子智慧",
     aladdinMethod: "量子糾纏同步",
-    aladdinDesc: "利用量子糾纏原理，此模型與宇宙隨機性同步，識別數字相關性。",
+    aladdinDesc: "利用量子糾纏原理與宇宙隨機性同步，識別數字相關性。",
+    aladdinTag: "⚛️ 量子",
     
-    luckyTitle: "幸運星宇宙運勢",
-    luckyMethod: "蒙特卡羅模擬引擎",
-    luckyDesc: "通過運行大量隨機迭代，此模型識別在 1,000,000 次虛擬抽獎中統計存活的數字群組。",
+    luckyTitle: "幸運星命運",
+    luckyMethod: "蒙特卡羅引擎",
+    luckyDesc: "大量隨機迭代 (1,000,000+ 次虛擬抽獎) 識別統計顯著的數字群組。",
+    luckyTag: "⭐ 蒙地卡羅",
     
     acheloisTitle: "月光女神智慧",
-    acheloisMethod: "月相週期模式識別",
-    acheloisDesc: "此模型分析歷史開獎與月相的關係，識別與月亮週期相關的規律。",
+    acheloisMethod: "月相週期識別",
+    acheloisDesc: "月相分析揭示月亮週期與歷史開獎結果的相關性。",
+    acheloisTag: "🌙 月相",
     
-    mark6Disclaimer: "僅供娛樂：所有預測僅供娛樂用途。賭博涉及風險，請理性投注。",
+    mark6Disclaimer: "🎯 僅供娛樂：所有預測僅供娛樂用途。請理性投注。",
+    learnMore: "了解更多 →",
     
-    // Stock Section
-    methodologyTitle: "AI 股票分析方法論",
-    methodologySubtitle: "我們的 AI 股市引擎結合了深度學習與計量金融模型，為投資者提供多維度的市場洞察。",
+    methodologyTitle: "📊 AI 股票分析方法論",
+    methodologySubtitle: "深度學習與計量金融的結合 — 多維度市場洞察。",
     
-    cnnTitle: "卷積神經網絡 (CNN) 趨勢分析",
-    cnnDesc: "透過分析 K 線圖的視覺模式，識別市場反轉信號與持續趨勢。",
+    cnnTitle: "CNN 模式識別",
+    cnnDesc: "先進的 K 線圖模式分析，識別市場反轉信號與持續趨勢。",
+    cnnTag: "📊 模式",
     
-    sentimentTitle: "情緒分析引擎",
-    sentimentDesc: "實時監測全球新聞與社交媒體，量化市場對特定股票的恐懼與貪婪情緒。",
+    sentimentTitle: "情緒智能",
+    sentimentDesc: "即時全球新聞與社交媒體監測，量化市場恐懼與貪婪。",
+    sentimentTag: "📰 情緒",
     
-    volatilityTitle: "波動性預測模型",
-    volatilityDesc: "利用 GARCH 模型優化風險控制，預測未來 24 小時至 7 天的潛在價格區間。",
+    volatilityTitle: "波動性預測",
+    volatilityDesc: "GARCH 模型優化風險控制，預測未來 24 小時至 7 天的價格區間。",
+    volatilityTag: "📉 風險",
     
-    fundamentalTitle: "基本面量化",
-    fundamentalDesc: "自動抓取財報數據，結合宏觀經濟指標，評估股票的內在價值與成長潛力。",
+    fundamentalTitle: "基本面分析",
+    fundamentalDesc: "自動解析財報數據與宏觀指標，評估內在價值。",
+    fundamentalTag: "💰 價值",
     
-    neutralTitle: "AI 股市數據分析方法論",
-    neutralSubtitle: "本平台堅持中立原則，旨在將專業級 AI 技術轉化為易於理解的數據參考。最終決策應由用戶根據個人情況獨立做出。",
+    neutralSubtitle: "⚖️ 純淨數據，零偏見 — 我們提供透明的 AI 洞察，您自己做決策。",
     
-    sentimentQuantTitle: "市場情緒量化",
-    sentimentQuantDesc: "透過 AI 監測市場熱度，而非提供买卖建議，幫助用戶識別當前的「群體情緒」。",
+    compareTitle: "⚔️ 六合彩 vs 股票：AI 方法比較",
+    compareFeature: "功能",
+    compareMark6: "🎰 六合彩 AI",
+    compareStocks: "📈 股票 AI",
+    compareData: "數據來源",
+    compareMark6Data: "歷史開獎 (100+ 期)",
+    compareStocksData: "即時市場 + 新聞",
+    compareModel: "核心模型",
+    compareMark6Model: "蒙特卡羅 + 機率論",
+    compareStocksModel: "CNN + LSTM + GARCH",
+    compareOutput: "輸出結果",
+    compareMark6Output: "10 組號碼",
+    compareStocksOutput: "價格 + 情緒",
     
-    patternTitle: "多維度模式識別",
-    patternDesc: "利用 CNN 模型分析歷史數據形狀，為用戶呈現「統計上的相似性」，而非預測未來結果。",
-    
-    riskTitle: "波動性風險評估",
-    riskDesc: "利用 GARCH 模型量化風險區間，提醒用戶潛在的市場波動，強化風險意識。"
+    ctaTitle: "準備好探索了嗎？",
+    ctaSub: "今天就開始您的 AI 預測之旅。",
+    ctaButton: "🚀 立即開始",
   },
   "zh-CN": {
     pageTitle: "运作原理",
     backHome: "返回首页",
+    listenPage: "🔊 收听页面",
+    stopListening: "⏹ 停止",
     
-    // Choice Gateway
     chooseYourPath: "选择您的路径",
-    mark6CardTitle: "运气的科学",
+    mark6CardTitle: "🎰 运气的科学",
     mark6CardSubtitle: "六合彩 AI 运作原理",
-    stockCardTitle: "市场的逻辑",
+    stockCardTitle: "📈 市场的逻辑",
     stockCardSubtitle: "股票 AI 运作原理",
+    explore: "探索 →",
     
-    // Mark6 Section
-    mark6Title: "六合彩 AI 运作原理",
-    mark6Subtitle: "我们的 AI 六合彩引擎结合数学模型与娱乐导向预测。仅供娱乐用途。",
+    flowTitle: "⚡ 三步驟开始使用",
+    flowStep1: "选择 AI 伙伴",
+    flowStep1Desc: "从 5 个独特 AI 模型中选择，每个都有不同的数学方法。",
+    flowStep2: "设定与分析",
+    flowStep2Desc: "设定您的偏好，让 AI 执行高级模拟。",
+    flowStep3: "获取洞见",
+    flowStep3Desc: "接收您的专属预测报告与推荐号码组合。",
     
-    // 5 Characters
-    elonTitle: "Elon 战略预测",
+    mark6Title: "🎲 六合彩 AI 运作原理",
+    mark6Subtitle: "数学与娱乐的结合 — 我们的 AI 引擎结合先进统计模型与趣味预测。",
+    
+    elonTitle: "Elon 战略视野",
     elonMethod: "庄闲博弈论",
-    elonDesc: "此模型应用策略博弈论分析庄闲关系，识别历史开奖数据中的规律。",
+    elonDesc: "应用策略博弈论分析庄闲关系，识别历史开奖数据中的最优规律。",
+    elonTag: "🎯 战略",
     
-    godTitle: "赌神天眼",
+    godTitle: "赌神洞察",
     godMethod: "混沌理论逻辑",
-    godDesc: "此模型通过分析历史气流扰动模式，识别随机开奖数据中的隐藏结构。",
+    godDesc: "先进的混沌理论算法，揭示随机开奖数据中的隐藏结构。",
+    godTag: "🌀 混沌",
     
-    aladdinTitle: "阿拉丁神灯",
+    aladdinTitle: "阿拉丁量子智慧",
     aladdinMethod: "量子纠缠同步",
-    aladdinDesc: "利用量子纠缠原理，此模型与宇宙随机性同步，识别数字相关性。",
+    aladdinDesc: "利用量子纠缠原理与宇宙随机性同步，识别数字相关性。",
+    aladdinTag: "⚛️ 量子",
     
-    luckyTitle: "幸运星宇宙运势",
-    luckyMethod: "蒙特卡洛模拟引擎",
-    luckyDesc: "通过运行大量随机迭代，此模型识别在 1,000,000 次虚拟抽奖中统计存活的数字群组。",
+    luckyTitle: "幸运星命运",
+    luckyMethod: "蒙特卡洛引擎",
+    luckyDesc: "大量随机迭代 (1,000,000+ 次虚拟抽奖) 识别统计显著的数字群组。",
+    luckyTag: "⭐ 蒙特卡洛",
     
     acheloisTitle: "月光女神智慧",
-    acheloisMethod: "月相周期模式识别",
-    acheloisDesc: "此模型分析历史开奖与月相的关系，识别与月亮周期相关的规律。",
+    acheloisMethod: "月相周期识别",
+    acheloisDesc: "月相分析揭示月亮周期与历史开奖结果的相关性。",
+    acheloisTag: "🌙 月相",
     
-    mark6Disclaimer: "仅供娱乐：所有预测仅供娱乐用途。赌博涉及风险，请理性投注。",
+    mark6Disclaimer: "🎯 仅供娱乐：所有预测仅供娱乐用途。请理性投注。",
+    learnMore: "了解更多 →",
     
-    // Stock Section
-    methodologyTitle: "AI 股票分析方法论",
-    methodologySubtitle: "我们的 AI 股市引擎结合了深度学习与计量金融模型，为投资者提供多维度的市场洞察。",
+    methodologyTitle: "📊 AI 股票分析方法论",
+    methodologySubtitle: "深度学习与计量金融的结合 — 多维度市场洞察。",
     
-    cnnTitle: "卷积神经网络 (CNN) 趋势分析",
-    cnnDesc: "通过分析 K 线图的视觉模式，识别市场反转信号与持续趋势。",
+    cnnTitle: "CNN 模式识别",
+    cnnDesc: "先进的 K 线图模式分析，识别市场反转信号与持续趋势。",
+    cnnTag: "📊 模式",
     
-    sentimentTitle: "情绪分析引擎",
-    sentimentDesc: "实时监测全球新闻与社交媒体，量化市场对特定股票的恐惧与贪婪情绪。",
+    sentimentTitle: "情绪智能",
+    sentimentDesc: "实时全球新闻与社交媒体监测，量化市场恐惧与贪婪。",
+    sentimentTag: "📰 情绪",
     
-    volatilityTitle: "波动性预测模型",
-    volatilityDesc: "利用 GARCH 模型优化风险控制，预测未来 24 小时至 7 天的潜在价格区间。",
+    volatilityTitle: "波动性预测",
+    volatilityDesc: "GARCH 模型优化风险控制，预测未来 24 小时至 7 天的价格区间。",
+    volatilityTag: "📉 风险",
     
-    fundamentalTitle: "基本面量化",
-    fundamentalDesc: "自动抓取财报数据，结合宏观经济指标，评估股票的内在价值与成长潜力。",
+    fundamentalTitle: "基本面分析",
+    fundamentalDesc: "自动解析财报数据与宏观指标，评估内在价值。",
+    fundamentalTag: "💰 价值",
     
-    neutralTitle: "AI 股市数据分析方法论",
-    neutralSubtitle: "本平台坚持中立原则，旨在将专业级 AI 技术转化为易于理解的数据参考。最终决策应由用户根据个人情况独立做出。",
+    neutralSubtitle: "⚖️ 纯净数据，零偏见 — 我们提供透明的 AI 洞察，您自己做决策。",
     
-    sentimentQuantTitle: "市场情绪量化",
-    sentimentQuantDesc: "通过 AI 监测市场热度，而非提供买卖建议，帮助用户识别当前的「群体情绪」。",
+    compareTitle: "⚔️ 六合彩 vs 股票：AI 方法比较",
+    compareFeature: "功能",
+    compareMark6: "🎰 六合彩 AI",
+    compareStocks: "📈 股票 AI",
+    compareData: "数据来源",
+    compareMark6Data: "历史开奖 (100+ 期)",
+    compareStocksData: "实时市场 + 新闻",
+    compareModel: "核心模型",
+    compareMark6Model: "蒙特卡洛 + 概率论",
+    compareStocksModel: "CNN + LSTM + GARCH",
+    compareOutput: "输出结果",
+    compareMark6Output: "10 组号码",
+    compareStocksOutput: "价格 + 情绪",
     
-    patternTitle: "多维度模式识别",
-    patternDesc: "利用 CNN 模型分析历史数据形状，为用户呈现「统计上的相似性」，而非预测未来结果。",
-    
-    riskTitle: "波动性风险评估",
-    riskDesc: "利用 GARCH 模型量化风险区间，提醒用户潜在的市场波动，强化风险意识。"
+    ctaTitle: "准备好探索了吗？",
+    ctaSub: "今天就开始您的 AI 预测之旅。",
+    ctaButton: "🚀 立即开始",
   }
 };
 
@@ -210,6 +298,7 @@ const HowItWorks = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const t = translations[language] || translations.en;
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -218,382 +307,379 @@ const HowItWorks = () => {
     }
   };
 
+  const speakPage = () => {
+    if (isSpeaking) {
+      window.speechSynthesis?.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const contentElements = document.querySelectorAll('main p, main h1, main h2, main h3');
+    let fullText = '';
+    contentElements.forEach(el => {
+      const text = el.textContent?.trim();
+      if (text && text.length > 20) {
+        fullText += text + '. ';
+      }
+    });
+
+    if (!window.speechSynthesis) {
+      alert('Text-to-speech is not supported in this browser.');
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(fullText);
+    const voices = window.speechSynthesis.getVoices();
+    const voiceLang = language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US';
+    utterance.lang = voiceLang;
+    
+    let selectedVoice = voices.find(v => v.lang.includes(voiceLang));
+    if (!selectedVoice) {
+      selectedVoice = voices.find(v => v.lang.includes('en'));
+    }
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-slate-950 flex flex-col">
       <Navbar />
       
       <main className="flex-1 pt-20 pb-8">
-        {/* Page Header */}
+        {/* Page Header with Voice Button */}
         <div className="container mx-auto px-6 max-w-6xl mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-center text-gradient-gold mb-2">
-            {t.pageTitle}
-          </h1>
-          <p className="text-center text-foreground/60 text-lg">
-            {t.chooseYourPath}
-          </p>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent mb-2">
+                {t.pageTitle}
+              </h1>
+              <p className="text-slate-400 text-lg">
+                {t.chooseYourPath}
+              </p>
+            </div>
+            <button
+              onClick={speakPage}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-medium ${
+                isSpeaking 
+                  ? 'bg-red-500/20 border border-red-500/50 text-red-400 animate-pulse'
+                  : 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 text-amber-400 hover:from-amber-500/30 hover:to-yellow-500/30'
+              }`}
+            >
+              {isSpeaking ? (
+                <>
+                  <VolumeX className="w-4 h-4" />
+                  <span>{t.stopListening}</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4" />
+                  <span>{t.listenPage}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Choice Gateway - Two Large Cards */}
+        {/* Choice Gateway - Two Large Cards with Vibrant Colors */}
         <section className="container mx-auto px-6 max-w-5xl mb-16">
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Mark6 Card - Gold Theme */}
+            {/* Mark6 Card - Gold/Amber Gradient */}
             <button
               onClick={() => scrollToSection('mark6-section')}
-              className="group relative overflow-hidden rounded-2xl p-8 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+              className="group relative overflow-hidden rounded-2xl p-10 text-left transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl"
               style={{
-                background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #B8860B 100%)',
-                boxShadow: '0 10px 40px rgba(255, 215, 0, 0.3)'
+                background: 'linear-gradient(135deg, #FFD700 0%, #F59E0B 40%, #D97706 80%, #B45309 100%)',
+                boxShadow: '0 20px 60px rgba(245, 158, 11, 0.4)'
               }}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-                <Dice6 className="w-full h-full text-white" />
-              </div>
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
               <div className="relative z-10">
-                <div className="w-16 h-16 mb-4 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                <div className="w-16 h-16 mb-4 rounded-2xl flex items-center justify-center bg-white/20 backdrop-blur-sm">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
                   {t.mark6CardTitle}
                 </h2>
-                <p className="text-white/80 text-base">
+                <p className="text-white/80 text-base mb-4">
                   {t.mark6CardSubtitle}
                 </p>
-                <div className="mt-4 flex items-center text-white/90 group-hover:translate-x-2 transition-transform">
-                  <span className="font-medium">Explore</span>
-                  <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+                <div className="inline-flex items-center text-white/90 group-hover:translate-x-2 transition-transform font-medium">
+                  <span>{t.explore}</span>
                 </div>
               </div>
             </button>
 
-            {/* Stock Card - Navy Blue Theme */}
+            {/* Stock Card - Navy/Blue Gradient */}
             <button
               onClick={() => scrollToSection('stock-section')}
-              className="group relative overflow-hidden rounded-2xl p-8 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+              className="group relative overflow-hidden rounded-2xl p-10 text-left transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl"
               style={{
-                background: 'linear-gradient(135deg, #1A237E 0%, #283593 50%, #3949AB 100%)',
-                boxShadow: '0 10px 40px rgba(26, 35, 126, 0.3)'
+                background: 'linear-gradient(135deg, #1E40AF 0%, #2563EB 40%, #3B82F6 70%, #60A5FA 100%)',
+                boxShadow: '0 20px 60px rgba(37, 99, 235, 0.4)'
               }}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-                <TrendingUp className="w-full h-full text-white" />
-              </div>
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
               <div className="relative z-10">
-                <div className="w-16 h-16 mb-4 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                <div className="w-16 h-16 mb-4 rounded-2xl flex items-center justify-center bg-white/20 backdrop-blur-sm">
                   <TrendingUp className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
                   {t.stockCardTitle}
                 </h2>
-                <p className="text-white/80 text-base">
+                <p className="text-white/80 text-base mb-4">
                   {t.stockCardSubtitle}
                 </p>
-                <div className="mt-4 flex items-center text-white/90 group-hover:translate-x-2 transition-transform">
-                  <span className="font-medium">Explore</span>
-                  <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+                <div className="inline-flex items-center text-white/90 group-hover:translate-x-2 transition-transform font-medium">
+                  <span>{t.explore}</span>
                 </div>
               </div>
             </button>
           </div>
         </section>
 
-        {/* Mark6 AI Methodology Section - Gold Theme */}
+        {/* How It Works Flow - 3 Steps with Bright Colors */}
+        <section className="container mx-auto px-6 max-w-5xl mb-16">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
+              {t.flowTitle}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { icon: Bot, title: t.flowStep1, desc: t.flowStep1Desc, color: 'from-amber-400 to-yellow-500', bg: 'bg-amber-500/10', border: 'border-amber-500/30' },
+              { icon: Mic, title: t.flowStep2, desc: t.flowStep2Desc, color: 'from-blue-400 to-cyan-500', bg: 'bg-blue-500/10', border: 'border-blue-500/30' },
+              { icon: BarChart3, title: t.flowStep3, desc: t.flowStep3Desc, color: 'from-emerald-400 to-green-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' }
+            ].map((step, idx) => (
+              <div key={idx} className={`relative p-8 rounded-2xl border ${step.border} ${step.bg} text-center group hover:scale-[1.02] transition-all duration-300 hover:shadow-xl`}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-bold flex items-center justify-center text-sm shadow-lg">
+                  {idx + 1}
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <step.icon className={`w-12 h-12 bg-gradient-to-r ${step.color} bg-clip-text text-transparent group-hover:scale-110 transition-transform`} />
+                </div>
+                <h3 className="font-bold text-white text-lg mt-3">{step.title}</h3>
+                <p className="text-slate-400 text-sm mt-1 leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Comparison Table - Vibrant Colors */}
+        <section className="container mx-auto px-6 max-w-5xl mb-16">
+          <div className="rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl">
+            <div className="text-center py-5 bg-gradient-to-r from-slate-800/80 to-slate-900/80 border-b border-slate-700/50">
+              <h2 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-400">
+                {t.compareTitle}
+              </h2>
+            </div>
+            <div className="grid grid-cols-3 divide-x divide-slate-700/50">
+              <div className="p-4 text-center font-bold text-slate-400 bg-slate-900/50"> {t.compareFeature}</div>
+              <div className="p-4 text-center font-bold text-amber-400 bg-gradient-to-r from-amber-500/10 to-yellow-500/10">{t.compareMark6}</div>
+              <div className="p-4 text-center font-bold text-blue-400 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">{t.compareStocks}</div>
+              
+              <div className="p-4 text-sm text-slate-400 bg-slate-900/30 border-t border-slate-700/50">{t.compareData}</div>
+              <div className="p-4 text-sm text-white text-center bg-slate-900/30 border-t border-slate-700/50">{t.compareMark6Data}</div>
+              <div className="p-4 text-sm text-white text-center bg-slate-900/30 border-t border-slate-700/50">{t.compareStocksData}</div>
+              
+              <div className="p-4 text-sm text-slate-400 bg-slate-900/30 border-t border-slate-700/50">{t.compareModel}</div>
+              <div className="p-4 text-sm text-white text-center bg-slate-900/30 border-t border-slate-700/50">{t.compareMark6Model}</div>
+              <div className="p-4 text-sm text-white text-center bg-slate-900/30 border-t border-slate-700/50">{t.compareStocksModel}</div>
+              
+              <div className="p-4 text-sm text-slate-400 bg-slate-900/30 border-t border-slate-700/50 rounded-bl-2xl">{t.compareOutput}</div>
+              <div className="p-4 text-sm text-white text-center bg-slate-900/30 border-t border-slate-700/50">{t.compareMark6Output}</div>
+              <div className="p-4 text-sm text-white text-center bg-slate-900/30 border-t border-slate-700/50 rounded-br-2xl">{t.compareStocksOutput}</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Mark6 AI Methodology Section - Vibrant Gold Theme */}
         <section 
           id="mark6-section" 
-          className="py-16 scroll-mt-20"
+          className="py-20 scroll-mt-20 relative overflow-hidden"
           style={{
-            background: 'linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%)'
+            background: 'linear-gradient(180deg, #0f0a00 0%, #1a0f00 30%, #2d1a00 60%, #1a0f00 100%)'
           }}
         >
-          <div className="container mx-auto px-6 max-w-6xl">
-            {/* Section Header */}
-            <div className="text-center mb-12">
-              <h2 
-                className="text-2xl md:text-3xl font-bold mb-4"
-                style={{ 
-                  background: 'linear-gradient(90deg, #FFD700, #FFA500)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
+          {/* Gold particles background */}
+          <div className="absolute inset-0 pointer-events-none opacity-10">
+            <div className="absolute top-10 left-10 w-2 h-2 bg-amber-400 rounded-full blur-sm" />
+            <div className="absolute top-20 right-20 w-3 h-3 bg-yellow-400 rounded-full blur-sm" />
+            <div className="absolute bottom-10 left-1/3 w-2 h-2 bg-amber-500 rounded-full blur-sm" />
+            <div className="absolute top-1/2 right-1/4 w-4 h-4 bg-yellow-300 rounded-full blur-md" />
+          </div>
+          
+          <div className="container mx-auto px-6 max-w-6xl relative z-10">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent mb-4">
                 {t.mark6Title}
               </h2>
-              <p className="text-lg max-w-4xl mx-auto text-gray-300">
+              <p className="text-lg max-w-4xl mx-auto text-amber-200/70">
                 {t.mark6Subtitle}
               </p>
             </div>
             
-            {/* 5 Characters Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {/* Elon */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(255, 215, 0, 0.1)', 
-                  borderColor: 'rgba(255, 215, 0, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 215, 0, 0.2)' }}>
-                    <Zap className="w-6 h-6" style={{ color: '#FFD700' }} />
+            {/* 5 Characters Grid - Enhanced with Tags */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+              {[
+                { icon: Zap, title: t.elonTitle, method: t.elonMethod, desc: t.elonDesc, tag: t.elonTag, color: 'from-amber-400 to-yellow-500', bg: 'bg-amber-500/10', border: 'border-amber-500/30' },
+                { icon: Dice6, title: t.godTitle, method: t.godMethod, desc: t.godDesc, tag: t.godTag, color: 'from-purple-400 to-pink-500', bg: 'bg-purple-500/10', border: 'border-purple-500/30' },
+                { icon: Sparkles, title: t.aladdinTitle, method: t.aladdinMethod, desc: t.aladdinDesc, tag: t.aladdinTag, color: 'from-violet-400 to-purple-500', bg: 'bg-violet-500/10', border: 'border-violet-500/30' },
+                { icon: Star, title: t.luckyTitle, method: t.luckyMethod, desc: t.luckyDesc, tag: t.luckyTag, color: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30' },
+                { icon: Moon, title: t.acheloisTitle, method: t.acheloisMethod, desc: t.acheloisDesc, tag: t.acheloisTag, color: 'from-sky-400 to-indigo-500', bg: 'bg-sky-500/10', border: 'border-sky-500/30' }
+              ].map((char, idx) => (
+                <div 
+                  key={idx}
+                  className={`rounded-2xl p-6 border ${char.border} bg-slate-900/40 backdrop-blur-sm transition-all hover:scale-[1.02] hover:shadow-2xl hover:border-${char.color.split(' ')[0].replace('from-', '')}`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r ${char.color} bg-opacity-20`}>
+                      <char.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white">{char.title}</h3>
+                      <p className={`text-sm bg-gradient-to-r ${char.color} bg-clip-text text-transparent font-medium`}>{char.method}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.elonTitle}</h3>
-                    <p className="text-sm" style={{ color: '#FFD700' }}>{t.elonMethod}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.elonDesc}</p>
-              </div>
-
-              {/* God of Gambling */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(218, 165, 32, 0.1)', 
-                  borderColor: 'rgba(218, 165, 32, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(218, 165, 32, 0.2)' }}>
-                    <Dice6 className="w-6 h-6" style={{ color: '#DAA520' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.godTitle}</h3>
-                    <p className="text-sm" style={{ color: '#DAA520' }}>{t.godMethod}</p>
+                  <p className="text-sm text-slate-300 leading-relaxed">{char.desc}</p>
+                  <div className="mt-3 inline-block px-3 py-1 rounded-full text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/50">
+                    {char.tag}
                   </div>
                 </div>
-                <p className="text-sm text-gray-400">{t.godDesc}</p>
-              </div>
-
-              {/* Aladdin */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(138, 43, 226, 0.1)', 
-                  borderColor: 'rgba(138, 43, 226, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(138, 43, 226, 0.2)' }}>
-                    <Sparkles className="w-6 h-6" style={{ color: '#8A2BE2' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.aladdinTitle}</h3>
-                    <p className="text-sm" style={{ color: '#8A2BE2' }}>{t.aladdinMethod}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.aladdinDesc}</p>
-              </div>
-
-              {/* Lucky Star */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(192, 192, 192, 0.1)', 
-                  borderColor: 'rgba(192, 192, 192, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(192, 192, 192, 0.2)' }}>
-                    <Star className="w-6 h-6" style={{ color: '#C0C0C0' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.luckyTitle}</h3>
-                    <p className="text-sm" style={{ color: '#C0C0C0' }}>{t.luckyMethod}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.luckyDesc}</p>
-              </div>
-
-              {/* Achelois */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(255, 191, 0, 0.1)', 
-                  borderColor: 'rgba(255, 191, 0, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 191, 0, 0.2)' }}>
-                    <Moon className="w-6 h-6" style={{ color: '#FFBF00' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.acheloisTitle}</h3>
-                    <p className="text-sm" style={{ color: '#FFBF00' }}>{t.acheloisMethod}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.acheloisDesc}</p>
-              </div>
+              ))}
             </div>
 
             {/* Disclaimer */}
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 215, 0, 0.1)' }}>
-              <p className="text-sm" style={{ color: '#FFD700' }}>
-                ⚠️ {t.mark6Disclaimer}
+            <div className="text-center p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20">
+              <p className="text-sm text-amber-400/80">
+                {t.mark6Disclaimer}
               </p>
             </div>
           </div>
         </section>
 
-        {/* Stock AI Methodology Section - Card-Based Layout Matching Mark6 */}
+        {/* Stock AI Methodology Section - Vibrant Blue Theme */}
         <section 
           id="stock-section" 
-          className="py-16 scroll-mt-20 relative overflow-hidden" 
-          style={{ backgroundColor: '#121212' }}
+          className="py-20 scroll-mt-20 relative overflow-hidden" 
+          style={{
+            background: 'linear-gradient(180deg, #0a0f1a 0%, #0a1628 30%, #0f1f3a 60%, #0a1628 100%)'
+          }}
         >
-          {/* Stock Candle Chart Watermark Background */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.05]">
+          {/* Stock Candle Chart Watermark - Enhanced */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.08]">
             <svg className="w-full h-full" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
-              {/* Green candles (up/bull) */}
-              <rect x="50" y="150" width="10" height="100" fill="#2ECC71" />
-              <line x1="55" y1="110" x2="55" y2="150" stroke="#2ECC71" strokeWidth="2" />
-              <line x1="55" y1="250" x2="55" y2="290" stroke="#2ECC71" strokeWidth="2" />
-              
-              <rect x="150" y="180" width="10" height="70" fill="#2ECC71" />
-              <rect x="350" y="120" width="10" height="120" fill="#2ECC71" />
-              <rect x="550" y="160" width="10" height="80" fill="#2ECC71" />
-              <rect x="750" y="140" width="10" height="70" fill="#2ECC71" />
-              <rect x="950" y="100" width="10" height="130" fill="#2ECC71" />
-              <rect x="1100" y="130" width="10" height="90" fill="#2ECC71" />
-              
-              {/* Red candles (down/bear) */}
-              <rect x="100" y="200" width="10" height="80" fill="#E74C3C" />
-              <rect x="250" y="160" width="10" height="110" fill="#E74C3C" />
-              <rect x="450" y="180" width="10" height="70" fill="#E74C3C" />
-              <rect x="650" y="200" width="10" height="90" fill="#E74C3C" />
-              <rect x="850" y="170" width="10" height="100" fill="#E74C3C" />
-              <rect x="1000" y="190" width="10" height="60" fill="#E74C3C" />
-              
-              {/* Trend lines */}
-              <path d="M30 320 Q200 260, 400 180 T800 160 T1180 100" stroke="#2ECC71" strokeWidth="1.5" fill="none" opacity="0.4" />
-              <path d="M30 370 Q300 320, 600 290 T1000 260 T1180 230" stroke="#E74C3C" strokeWidth="1.5" fill="none" opacity="0.4" />
+              <rect x="50" y="150" width="12" height="120" fill="#2ECC71" />
+              <rect x="150" y="180" width="12" height="90" fill="#2ECC71" />
+              <rect x="350" y="120" width="12" height="140" fill="#2ECC71" />
+              <rect x="550" y="160" width="12" height="100" fill="#2ECC71" />
+              <rect x="750" y="140" width="12" height="90" fill="#2ECC71" />
+              <rect x="950" y="100" width="12" height="150" fill="#2ECC71" />
+              <rect x="1100" y="130" width="12" height="110" fill="#2ECC71" />
+              <rect x="100" y="200" width="12" height="100" fill="#E74C3C" />
+              <rect x="250" y="160" width="12" height="130" fill="#E74C3C" />
+              <rect x="450" y="180" width="12" height="90" fill="#E74C3C" />
+              <rect x="650" y="200" width="12" height="110" fill="#E74C3C" />
+              <rect x="850" y="170" width="12" height="120" fill="#E74C3C" />
+              <rect x="1000" y="190" width="12" height="80" fill="#E74C3C" />
+              <path d="M30 320 Q200 260, 400 180 T800 160 T1180 100" stroke="#2ECC71" strokeWidth="2" fill="none" opacity="0.6" />
+              <path d="M30 370 Q300 320, 600 290 T1000 260 T1180 230" stroke="#E74C3C" strokeWidth="2" fill="none" opacity="0.6" />
             </svg>
           </div>
 
           <div className="container mx-auto px-6 max-w-6xl relative z-10">
-            {/* Section Header - Matching Mark6 Style */}
-            <div className="text-center mb-12">
-              <h2 
-                className="text-2xl md:text-3xl font-bold mb-4"
-                style={{ 
-                  background: 'linear-gradient(90deg, #2ECC71, #27AE60)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
-              >
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent mb-4">
                 {t.methodologyTitle}
               </h2>
-              <p className="text-lg max-w-4xl mx-auto text-gray-300">
+              <p className="text-lg max-w-4xl mx-auto text-blue-200/70">
                 {t.methodologySubtitle}
               </p>
             </div>
             
-            {/* 4 Methodology Cards Grid - Matching Mark6 Layout */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-              {/* CNN Trend Analysis Card */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(46, 204, 113, 0.1)', 
-                  borderColor: 'rgba(46, 204, 113, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 204, 113, 0.2)' }}>
-                    <Brain className="w-6 h-6" style={{ color: '#2ECC71' }} />
+            {/* 4 Methodology Cards - Enhanced */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
+              {[
+                { icon: Brain, title: t.cnnTitle, desc: t.cnnDesc, tag: t.cnnTag, color: 'from-emerald-400 to-green-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' },
+                { icon: Activity, title: t.sentimentTitle, desc: t.sentimentDesc, tag: t.sentimentTag, color: 'from-red-400 to-orange-500', bg: 'bg-red-500/10', border: 'border-red-500/30' },
+                { icon: Shield, title: t.volatilityTitle, desc: t.volatilityDesc, tag: t.volatilityTag, color: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' },
+                { icon: TrendingUp, title: t.fundamentalTitle, desc: t.fundamentalDesc, tag: t.fundamentalTag, color: 'from-blue-400 to-indigo-500', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }
+              ].map((item, idx) => (
+                <div 
+                  key={idx}
+                  className={`rounded-2xl p-6 border ${item.border} bg-slate-900/40 backdrop-blur-sm transition-all hover:scale-[1.02] hover:shadow-2xl`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-r ${item.color} bg-opacity-20`}>
+                      <item.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white">{item.title}</h3>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.cnnTitle}</h3>
-                    <p className="text-sm" style={{ color: '#2ECC71' }}>
-                      {language === 'en' ? 'Candlestick Pattern Recognition' : language === 'zh-TW' ? 'K線形態識別' : 'K线形态识别'}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.cnnDesc}</p>
-              </div>
-
-              {/* Sentiment Analysis Card */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(231, 76, 60, 0.1)', 
-                  borderColor: 'rgba(231, 76, 60, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(231, 76, 60, 0.2)' }}>
-                    <Activity className="w-6 h-6" style={{ color: '#E74C3C' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.sentimentTitle}</h3>
-                    <p className="text-sm" style={{ color: '#E74C3C' }}>
-                      {language === 'en' ? 'Fear & Greed Index' : language === 'zh-TW' ? '恐懼與貪婪指數' : '恐惧与贪婪指数'}
-                    </p>
+                  <p className="text-sm text-slate-300 leading-relaxed">{item.desc}</p>
+                  <div className="mt-3 inline-block px-3 py-1 rounded-full text-xs font-medium bg-slate-800/80 text-slate-400 border border-slate-700/50">
+                    {item.tag}
                   </div>
                 </div>
-                <p className="text-sm text-gray-400">{t.sentimentDesc}</p>
-              </div>
-
-              {/* Volatility Prediction Card */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(46, 204, 113, 0.1)', 
-                  borderColor: 'rgba(46, 204, 113, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 204, 113, 0.2)' }}>
-                    <Shield className="w-6 h-6" style={{ color: '#2ECC71' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.volatilityTitle}</h3>
-                    <p className="text-sm" style={{ color: '#2ECC71' }}>
-                      {language === 'en' ? 'GARCH Risk Control' : language === 'zh-TW' ? 'GARCH 風險控制' : 'GARCH 风险控制'}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.volatilityDesc}</p>
-              </div>
-
-              {/* Fundamental Quant Card */}
-              <div 
-                className="rounded-xl p-6 border transition-all hover:scale-[1.02]"
-                style={{ 
-                  backgroundColor: 'rgba(231, 76, 60, 0.1)', 
-                  borderColor: 'rgba(231, 76, 60, 0.3)' 
-                }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(231, 76, 60, 0.2)' }}>
-                    <TrendingUp className="w-6 h-6" style={{ color: '#E74C3C' }} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{t.fundamentalTitle}</h3>
-                    <p className="text-sm" style={{ color: '#E74C3C' }}>
-                      {language === 'en' ? 'Intrinsic Value Assessment' : language === 'zh-TW' ? '內在價值評估' : '内在价值评估'}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400">{t.fundamentalDesc}</p>
-              </div>
+              ))}
             </div>
 
-            {/* Disclaimer - Matching Mark6 Style */}
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(46, 204, 113, 0.1)' }}>
-              <p className="text-sm" style={{ color: '#2ECC71' }}>
-                📊 {t.neutralSubtitle}
+            {/* Disclaimer */}
+            <div className="text-center p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+              <p className="text-sm text-blue-400/80">
+                {t.neutralSubtitle}
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* NEW: CTA Section - Call to Action */}
+        <section className="container mx-auto px-6 max-w-5xl mt-16 mb-8">
+          <div className="relative overflow-hidden rounded-3xl p-12 text-center bg-gradient-to-r from-amber-600/20 via-yellow-600/10 to-amber-600/20 border border-amber-500/30">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl" />
+            <div className="relative z-10">
+              <Crown className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                {t.ctaTitle}
+              </h2>
+              <p className="text-slate-400 text-lg mb-6">
+                {t.ctaSub}
+              </p>
+              <button
+                onClick={() => navigate("/generate-report")}
+                className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-bold text-lg shadow-2xl shadow-amber-500/30 hover:shadow-amber-500/50 hover:scale-[1.02] transition-all"
+              >
+                {t.ctaButton}
+              </button>
             </div>
           </div>
         </section>
 
         {/* Back to Home Button */}
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="text-sm text-foreground/60 hover:text-foreground hover:bg-transparent"
+            className="text-sm text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             {t.backHome}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gift, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Gift, Mail, AlertCircle, CheckCircle2, Chrome } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -56,6 +56,8 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
       alreadyClaimedTitle: "Gift Already Claimed",
       alreadyClaimedBody: "Your gift has been claimed. Please continue.",
       continueBtn: "Continue to Mark6 Game",
+      or: "or",
+      continueWithGoogle: "Continue with Google",
     },
     tc: {
       title: "解鎖您的48小時通行證",
@@ -81,6 +83,8 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
       alreadyClaimedTitle: "禮物已領取",
       alreadyClaimedBody: "您已領取過禮物。請繼續使用。",
       continueBtn: "前往 Mark6 遊戲",
+      or: "或",
+      continueWithGoogle: "使用 Google 繼續",
     },
     sc: {
       title: "解锁您的48小时通行证",
@@ -106,22 +110,20 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
       alreadyClaimedTitle: "礼物已领取",
       alreadyClaimedBody: "您已领取过礼物。请继续使用。",
       continueBtn: "前往 Mark6 游戏",
+      or: "或",
+      continueWithGoogle: "使用 Google 继续",
     },
   };
 
   const t = content[language === "zh-TW" ? "tc" : language === "zh-CN" ? "sc" : "en"] || content.en;
 
   // Double-shield: Check if already claimed when dialog opens
-  // IMPORTANT: Only show "Already Claimed" if user is ALSO authenticated
-  // If not authenticated, switch to login mode so they can sign in
   useEffect(() => {
     if (open) {
       const checkClaimedStatus = async () => {
-        // Check if user is authenticated first
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // User is authenticated - check if they claimed the gift
           const { data: profile } = await supabase
             .from("profiles")
             .select("is_explorer_used")
@@ -130,7 +132,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
           
           if (profile?.is_explorer_used) {
             localStorage.setItem("explorer_gift_claimed", "true");
-            // Also fetch the claimed_at timestamp
             const { data: fullProfile } = await supabase
               .from("profiles")
               .select("explorer_claimed_at")
@@ -142,12 +143,8 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
             setShowAlreadyClaimed(true);
           }
         } else {
-          // User is NOT authenticated
-          // If localStorage says gift claimed, they need to LOG IN first
           const localClaimed = localStorage.getItem("explorer_gift_claimed");
           if (localClaimed === "true") {
-            // Switch to login mode instead of showing "Already Claimed"
-            // They need to authenticate to access their account
             setIsLoginMode(true);
           }
         }
@@ -159,7 +156,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       toast({
@@ -183,7 +179,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
 
     try {
       if (isLoginMode) {
-        // Login flow
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -193,9 +188,7 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
           let errorTitle = "Sign In Failed";
           let errorDesc = error.message;
           
-          // Provide user-friendly error messages
           if (error.message.includes("Invalid login credentials")) {
-            // Check if the email exists by attempting a password reset (lightweight check)
             errorTitle = language === "zh-CN" ? "账户未找到" : language === "zh-TW" ? "帳戶未找到" : "Account Not Found";
             errorDesc = language === "zh-CN" 
               ? "找不到此邮箱的账户。请先注册，或检查邮箱是否正确。" 
@@ -220,7 +213,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
         }
 
         if (data.user) {
-          // Check if user already claimed gift
           const { data: profile } = await supabase
             .from("profiles")
             .select("is_explorer_used")
@@ -229,7 +221,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
           
           if (profile?.is_explorer_used) {
             localStorage.setItem("explorer_gift_claimed", "true");
-            // Also fetch and store the claimed_at timestamp if available
             const { data: fullProfile } = await supabase
               .from("profiles")
               .select("explorer_claimed_at")
@@ -245,18 +236,15 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
             description: language === "zh-CN" ? "正在加载您的账户..." : language === "zh-TW" ? "正在加載您的帳戶..." : "Loading your account...",
           });
           onOpenChange(false);
-          // Check if there's a pending plan from pricing page
           const pendingPlan = localStorage.getItem("pending_plan_type");
           if (pendingPlan) {
             localStorage.removeItem("pending_plan_type");
             navigate("/pricing");
           } else {
-            // Redirect to the specified page or Mark6 Game as default
             navigate(redirectTo || "/mark6-game");
           }
         }
       } else {
-        // Signup flow - Double-shield check before signup
         const localClaimed = localStorage.getItem("explorer_gift_claimed");
         if (localClaimed === "true") {
           setShowAlreadyClaimed(true);
@@ -264,7 +252,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
           return;
         }
 
-        // Capture UTM source for analytics tracking
         const urlParams = new URLSearchParams(window.location.search);
         const utmSource = urlParams.get("utm_source") || urlParams.get("ref") || "direct";
 
@@ -280,7 +267,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
         });
 
         if (error) {
-          // If user already exists, show already claimed or suggest login
           if (error.message.includes("already registered")) {
             toast({
               title: language === "zh-CN" ? "账户已存在" : "Account exists",
@@ -300,16 +286,9 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
         }
 
         if (data.user) {
-          // Mark as claimed in localStorage with timestamp
-          // NOTE: Profile is initialized by the handle_new_user trigger with:
-          // - is_explorer_used = true
-          // - explorer_claimed_at = now()
-          // - credit_balance = 5
-          // No client-side update needed - this prevents manipulation
           const claimedAt = new Date().toISOString();
           localStorage.setItem("explorer_gift_claimed", "true");
           localStorage.setItem("explorer_gift_claimed_at", claimedAt);
-          
           setShowWelcome(true);
         }
       }
@@ -325,6 +304,31 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
     }
   };
 
+  // Handle Google Sign In/Sign Up
+  const handleGoogleAuth = async () => {
+    try {
+      const siteUrl = import.meta.env.DEV 
+        ? 'http://localhost:8080' 
+        : window.location.origin;
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${siteUrl}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+      onOpenChange(false);
+    } catch (err: any) {
+      toast({
+        title: language === "zh-CN" ? "Google 登录失败" : language === "zh-TW" ? "Google 登入失敗" : "Google Sign In Failed",
+        description: err.message || "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleContinueToHome = () => {
     onOpenChange(false);
     navigate(redirectTo || "/mark6-game");
@@ -332,7 +336,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
 
   const handleClose = () => {
     onOpenChange(false);
-    // Reset state after dialog closes
     setTimeout(() => {
       setShowWelcome(false);
       setShowAlreadyClaimed(false);
@@ -346,7 +349,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md bg-background border-border max-h-[90vh] overflow-y-auto pb-20">
         {showAlreadyClaimed ? (
-          // Already Claimed State
           <div className="text-center py-6">
             <div className="mx-auto w-20 h-20 rounded-full bg-[#F59E0B]/20 flex items-center justify-center mb-6">
               <AlertCircle className="w-10 h-10 text-[#F59E0B]" />
@@ -411,6 +413,27 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
                 {isSubmitting ? t.submitting : (isLoginMode ? t.loginButton : t.submitButton)}
               </Button>
 
+              {/* Divider */}
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">{t.or}</span>
+                </div>
+              </div>
+
+              {/* Google Sign In/Up Button */}
+              <Button
+                type="button"
+                onClick={handleGoogleAuth}
+                variant="outline"
+                className="w-full h-12 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 border-gray-300"
+              >
+                <Chrome className="h-5 w-5 text-[#4285F4]" />
+                <span className="font-medium text-gray-700">{t.continueWithGoogle}</span>
+              </Button>
+
               <button
                 type="button"
                 onClick={() => setIsLoginMode(!isLoginMode)}
@@ -435,7 +458,6 @@ const SignUpDialog = ({ open, onOpenChange, redirectTo }: SignUpDialogProps) => 
             </form>
           </>
         ) : (
-          // Welcome/Success State - New Joiner
           <div className="text-center py-6">
             <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-r from-[#10B981] to-[#059669] flex items-center justify-center mb-6 animate-pulse">
               <CheckCircle2 className="w-10 h-10 text-white" />

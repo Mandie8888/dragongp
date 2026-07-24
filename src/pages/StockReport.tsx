@@ -43,6 +43,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useSpeech } from "@/hooks/useSpeech";
+import { FacebookShareButton } from "@/components/FacebookShareButton";
 
 interface ReportData {
   ticker: string;
@@ -1211,60 +1212,71 @@ const getReportText = () => {
         </div>
       )}
 
-      <footer 
-        className="fixed bottom-0 left-0 right-0 py-2 md:py-3 px-3 md:px-4 print:hidden border-t z-40"
-        style={{ backgroundColor: "#fff", borderColor: "#ddd" }}
+      // In StockReport.tsx, find the footer section and replace with this:
+
+<footer 
+  className="fixed bottom-0 left-0 right-0 py-2 md:py-3 px-3 md:px-4 print:hidden border-t z-40"
+  style={{ backgroundColor: "#fff", borderColor: "#ddd" }}
+>
+  <div className="max-w-4xl mx-auto flex flex-col gap-2">
+    <div className="grid grid-cols-4 gap-1.5 md:flex md:gap-3 md:justify-center">
+      <Button
+        onClick={handleSelectAnother}
+        className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-md md:rounded-lg bg-[#003366] hover:bg-[#002244] text-white shadow-sm"
       >
-        <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          <div className="grid grid-cols-3 gap-1.5 md:flex md:gap-3 md:justify-center">
-            <Button
-              onClick={handleSelectAnother}
-              className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-md md:rounded-lg bg-[#003366] hover:bg-[#002244] text-white shadow-sm"
-            >
-              <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-              <span className="truncate">{t.selectAnother}</span>
-            </Button>
-            <Button
-              onClick={handlePrint}
-              className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-gradient-to-r from-[#FFD700] to-[#B8860B] text-black hover:opacity-90 shadow-lg"
-            >
-              <Printer className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-              <span className="truncate">{t.printPDF}</span>
-            </Button>
-            
-            <WhatsAppShareButton
-              message=""
-              className="h-9 md:h-11"
-              size="sm"
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 md:flex md:gap-3 md:justify-center">
-            <Button
-              onClick={handleSavePDF}
-              className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white shadow-lg"
-            >
-              <FileDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-              <span className="truncate">{t.savePDF}</span>
-            </Button>
-            <Button
-              onClick={handleSaveImage}
-              className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-lg"
-            >
-              <Image className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-              <span className="truncate">{t.saveImage}</span>
-            </Button>
-          </div>
-          
-          <Link
-            to="/generate-report"
-            className="flex items-center justify-center gap-2 w-full h-11 md:h-12 px-4 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white font-bold text-sm md:text-base rounded-xl shadow-lg shadow-green-500/30 transition-all duration-300 active:scale-[0.98]"
-          >
-            <Sparkles className="w-5 h-5 flex-shrink-0" />
-            <span className="text-center leading-tight">{t.goToMark6}</span>
-          </Link>
-        </div>
-      </footer>
+        <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+        <span className="truncate">{t.selectAnother}</span>
+      </Button>
+      
+      <Button
+        onClick={handlePrint}
+        className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-gradient-to-r from-[#FFD700] to-[#B8860B] text-black hover:opacity-90 shadow-lg"
+      >
+        <Printer className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+        <span className="truncate">{t.printPDF}</span>
+      </Button>
+      
+      <WhatsAppShareButton
+        message={`Check out this AI Stock Analysis on ${reportData?.ticker || ''} from DragonGp.Ai!`}
+        className="h-9 md:h-11"
+        size="sm"
+      />
+      
+      {/* Facebook Share Button */}
+      <FacebookShareButton
+        url={window.location.href}
+        quote={`AI Stock Analysis: ${reportData?.ticker || ''} - ${reportData?.name || ''} | Price: ${currencySymbol}${reportData?.price?.toFixed(2) || 'N/A'} | DragonGp.Ai`}
+        size="sm"
+        className="h-9 md:h-11"
+      />
+    </div>
+    
+    <div className="grid grid-cols-2 gap-2 md:flex md:gap-3 md:justify-center">
+      <Button
+        onClick={handleSavePDF}
+        className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white shadow-lg"
+      >
+        <FileDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+        <span className="truncate">{t.savePDF}</span>
+      </Button>
+      <Button
+        onClick={handleSaveImage}
+        className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-lg"
+      >
+        <Image className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+        <span className="truncate">{t.saveImage}</span>
+      </Button>
+    </div>
+    
+    <Link
+      to="/generate-report"
+      className="flex items-center justify-center gap-2 w-full h-11 md:h-12 px-4 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white font-bold text-sm md:text-base rounded-xl shadow-lg shadow-green-500/30 transition-all duration-300 active:scale-[0.98]"
+    >
+      <Sparkles className="w-5 h-5 flex-shrink-0" />
+      <span className="text-center leading-tight">{t.goToMark6}</span>
+    </Link>
+  </div>
+</footer>
 
       <style>{`
         @media print {

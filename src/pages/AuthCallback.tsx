@@ -1,3 +1,4 @@
+// src/pages/AuthCallback.tsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +15,6 @@ export default function AuthCallback() {
       
       setStatus('Getting session...');
       
-      // Try to get the session
       const { data, error } = await supabase.auth.getSession();
       console.log('📦 Session data:', data);
       
@@ -28,6 +28,7 @@ export default function AuthCallback() {
       if (data?.session) {
         console.log('✅ User logged in successfully!');
         setStatus('Login successful! Redirecting...');
+        // Navigate to home page (which should be localhost)
         setTimeout(() => navigate('/'), 1000);
       } else {
         console.log('⚠️ No session found');
@@ -45,7 +46,6 @@ export default function AuthCallback() {
         <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-gold-500 border-r-transparent mb-4"></div>
         <h1 className="text-xl font-bold text-gray-800">Google Sign In</h1>
         <p className="text-gray-500 text-sm mt-2">{status}</p>
-        <p className="text-xs text-gray-400 mt-4 break-all">URL: {window.location.href}</p>
       </div>
     </div>
   );

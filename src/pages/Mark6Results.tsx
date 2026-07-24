@@ -9,11 +9,12 @@ import { FrequencyChart } from "@/components/mark6/FrequencyChart";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import InlineLanguageSwitcher from "@/components/InlineLanguageSwitcher";
-import { Printer, ArrowLeft, Sparkles, Zap, AlertTriangle, TrendingUp, BarChart3, Trophy, Volume2, VolumeX } from "lucide-react";
+import { Printer, ArrowLeft, Sparkles, Zap, AlertTriangle, TrendingUp, BarChart3, Trophy, Volume2, VolumeX, Calendar } from "lucide-react";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useMark6Speech } from "@/hooks/useMark6Speech";
+import { FacebookShareButton } from "@/components/FacebookShareButton";
 
 // ============================================================
 // HONG KONG MARK 6 DATA
@@ -152,6 +153,73 @@ const partnerThemes: Record<string, {
   },
 };
 
+// Define partner content
+const partnerContent: Record<string, {
+  mathModule: { en: string; "zh-TW": string; "zh-CN": string };
+  explanation: { en: string; "zh-TW": string; "zh-CN": string };
+}> = {
+  elon: {
+    mathModule: {
+      en: "Banker & Leg (Strategic Game Theory)",
+      "zh-TW": "膽拖策略 (博弈論)",
+      "zh-CN": "胆拖策略 (博弈论)",
+    },
+    explanation: {
+      en: "This model uses your selected Bankers as fixed anchors and calculates the optimal \"Legs\" based on historical air turbulence and game theory patterns.",
+      "zh-TW": "此模型使用您選擇的膽碼作為固定錨點，並根據歷史空氣湍流和博弈論模式計算最佳「拖碼」。",
+      "zh-CN": "此模型使用您选择的胆码作为固定锚点，并根据历史空气湍流和博弈论模式计算最佳「拖码」。",
+    },
+  },
+  "god-of-gambling": {
+    mathModule: {
+      en: "Methodology: Chaos Theory Logic",
+      "zh-TW": "方法論：混沌理論",
+      "zh-CN": "方法论：混沌理论",
+    },
+    explanation: {
+      en: "This model tracks non-linear patterns in random turbulence to find the \"Hidden Order\" in historical draw data using advanced chaos theory algorithms.",
+      "zh-TW": "此模型追蹤隨機湍流中的非線性模式，使用先進的混沌理論演算法在歷史開獎數據中尋找「隱藏秩序」。",
+      "zh-CN": "此模型追踪随机湍流中的非线性模式，使用先进的混沌理论算法在历史开奖数据中寻找「隐藏秩序」。",
+    },
+  },
+  "lucky-star": {
+    mathModule: {
+      en: "Methodology: Monte Carlo Simulation Engine",
+      "zh-TW": "方法論：蒙特卡羅模擬引擎",
+      "zh-CN": "方法论：蒙特卡罗模拟引擎",
+    },
+    explanation: {
+      en: "By running massive random iterations, this model identifies number clusters that statistically survive 1,000,000 virtual draws.",
+      "zh-TW": "透過運行大量隨機迭代，此模型識別出在 1,000,000 次虛擬抽獎中統計上存活的號碼群組。",
+      "zh-CN": "通过运行大量随机迭代，此模型识别出在 1,000,000 次虚拟抽奖中统计上存活的号码群组。",
+    },
+  },
+  achelois: {
+    mathModule: {
+      en: "Methodology: Neural Network Entropy",
+      "zh-TW": "方法論：神經網絡熵值分析",
+      "zh-CN": "方法论：神经网络熵值分析",
+    },
+    explanation: {
+      en: "This model uses deep neural networks to identify stable numerical structures within the chaotic entropy of historical draw data.",
+      "zh-TW": "此模型使用深度神經網絡在歷史開獎數據的混沌熵值中識別穩定的數字結構。",
+      "zh-CN": "此模型使用深度神经网络在历史开奖数据的混沌熵值中识别稳定的数字结构。",
+    },
+  },
+  aladdin: {
+    mathModule: {
+      en: "Quantum Spooky Sync (Color Spectrum)",
+      "zh-TW": "量子幽靈同步（色譜分佈）",
+      "zh-CN": "量子幽灵同步（色谱分布）",
+    },
+    explanation: {
+      en: "Uses color spectrum distribution to track the vibrant patterns of Red, Blue, and Green number zones.",
+      "zh-TW": "使用色譜分佈來追蹤紅、藍、綠號碼區域的鮮明模式。",
+      "zh-CN": "使用色谱分布来追踪红、蓝、绿号码区域的鲜明模式。",
+    },
+  },
+};
+
 export default function Mark6Results() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -189,76 +257,9 @@ export default function Mark6Results() {
   const theme = partnerThemes[partnerId] || partnerThemes.elon;
 
   // Voice controls
-  // Voice controls - uses the language from the context
-const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerName, isSpeaking, stop, isSupported, speakFullReport } = useMark6Speech({ 
-  lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
-});
-
-  const partnerContent: Record<string, { 
-    mathModule: { en: string; "zh-TW": string; "zh-CN": string };
-    explanation: { en: string; "zh-TW": string; "zh-CN": string };
-  }> = {
-    elon: {
-      mathModule: {
-        en: "Banker & Leg (Strategic Game Theory)",
-        "zh-TW": "膽拖策略 (博弈論)",
-        "zh-CN": "胆拖策略 (博弈论)",
-      },
-      explanation: {
-        en: "This model uses your selected Bankers as fixed anchors and calculates the optimal \"Legs\" based on historical air turbulence and game theory patterns.",
-        "zh-TW": "此模型使用您選擇的膽碼作為固定錨點，並根據歷史空氣湍流和博弈論模式計算最佳「拖碼」。",
-        "zh-CN": "此模型使用您选择的胆码作为固定锚点，并根据历史空气湍流和博弈论模式计算最佳「拖码」。",
-      },
-    },
-    "god-of-gambling": {
-      mathModule: {
-        en: "Methodology: Chaos Theory Logic",
-        "zh-TW": "方法論：混沌理論",
-        "zh-CN": "方法论：混沌理论",
-      },
-      explanation: {
-        en: "This model tracks non-linear patterns in random turbulence to find the \"Hidden Order\" in historical draw data using advanced chaos theory algorithms.",
-        "zh-TW": "此模型追蹤隨機湍流中的非線性模式，使用先進的混沌理論演算法在歷史開獎數據中尋找「隱藏秩序」。",
-        "zh-CN": "此模型追踪随机湍流中的非线性模式，使用先进的混沌理论算法在历史开奖数据中寻找「隐藏秩序」。",
-      },
-    },
-    "lucky-star": {
-      mathModule: {
-        en: "Methodology: Monte Carlo Simulation Engine",
-        "zh-TW": "方法論：蒙特卡羅模擬引擎",
-        "zh-CN": "方法论：蒙特卡罗模拟引擎",
-      },
-      explanation: {
-        en: "By running massive random iterations, this model identifies number clusters that statistically survive 1,000,000 virtual draws.",
-        "zh-TW": "透過運行大量隨機迭代，此模型識別出在 1,000,000 次虛擬抽獎中統計上存活的號碼群組。",
-        "zh-CN": "通过运行大量随机迭代，此模型识别出在 1,000,000 次虚拟抽奖中统计上存活的号码群组。",
-      },
-    },
-    achelois: {
-      mathModule: {
-        en: "Methodology: Neural Network Entropy",
-        "zh-TW": "方法論：神經網絡熵值分析",
-        "zh-CN": "方法论：神经网络熵值分析",
-      },
-      explanation: {
-        en: "This model uses deep neural networks to identify stable numerical structures within the chaotic entropy of historical draw data.",
-        "zh-TW": "此模型使用深度神經網絡在歷史開獎數據的混沌熵值中識別穩定的數字結構。",
-        "zh-CN": "此模型使用深度神经网络在历史开奖数据的混沌熵值中识别稳定的数字结构。",
-      },
-    },
-    aladdin: {
-      mathModule: {
-        en: "Quantum Spooky Sync (Color Spectrum)",
-        "zh-TW": "量子幽靈同步（色譜分佈）",
-        "zh-CN": "量子幽灵同步（色谱分布）",
-      },
-      explanation: {
-        en: "Uses color spectrum distribution to track the vibrant patterns of Red, Blue, and Green number zones.",
-        "zh-TW": "使用色譜分佈來追蹤紅、藍、綠號碼區域的鮮明模式。",
-        "zh-CN": "使用色谱分布来追踪红、蓝、绿号码区域的鲜明模式。",
-      },
-    },
-  };
+  const { speak, speakFullReport, getPartnerMethod, getPartnerName, isSpeaking, stop, isSupported } = useMark6Speech({ 
+    lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
+  });
 
   const statusMessages = [
     { en: "Analyzing historical patterns...", "zh-TW": "正在分析歷史規律...", "zh-CN": "正在分析历史规律..." },
@@ -301,8 +302,8 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
       shareWhatsApp: "Check out my AI-generated lucky numbers from DragonGP! Try it here:",
       goToStocks: "Go to AI Stocks Probability",
       gameLabel: "Game",
-      listenReport: "Use of Methodology",  // ✅ Changed from "Listen to Report"
-    stopVoice: "Stop Voice",
+      listenReport: "Listen to Report",
+      stopVoice: "Stop Voice",
     },
     "zh-TW": {
       processing: "AI 處理中...",
@@ -335,8 +336,8 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
       goToStocks: "前往 AI 股票概率分析",
       shareWhatsApp: "看看我用 DragonGP AI 生成的幸運號碼！在這裡試試:",
       gameLabel: "遊戲",
-      listenReport: "使用計算方法",  // ✅ Changed to "使用計算方法"
-    stopVoice: "停止語音",
+      listenReport: "收聽報告",
+      stopVoice: "停止語音",
     },
     "zh-CN": {
       processing: "AI 处理中...",
@@ -369,8 +370,8 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
       goToStocks: "前往 AI 股票概率分析",
       shareWhatsApp: "看看我用 DragonGP AI 生成的幸运号码！在这里试试:",
       gameLabel: "游戏",
-      listenReport: "使用计算方法",  // ✅ Changed to "使用计算方法"
-    stopVoice: "停止语音",
+      listenReport: "收听报告",
+      stopVoice: "停止语音",
     },
   };
 
@@ -422,16 +423,18 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
     navigate("/generate-report");
   };
 
+  // Handle voice play - uses full report with no interruption
   const handleVoicePlay = () => {
-  if (isSpeaking) {
-    stop();
-  } else {
-    const partnerName = getPartnerName(partnerId, language);
-    const method = getPartnerMethod(partnerId, language);
-    // Use the combined function that plays both messages sequentially
-    speakFullReport(partnerId, partnerName, method, gameType, predictions);
-  }
-};
+    if (isSpeaking) {
+      stop();
+    } else {
+      const partnerName = getPartnerName(partnerId, language);
+      const method = getPartnerMethod(partnerId, language);
+      console.log('🎤 Playing voice for:', partnerId, 'Method:', method);
+      console.log('📊 Predictions:', predictions);
+      speakFullReport(partnerId, partnerName, method, gameType, predictions);
+    }
+  };
 
   const getBallColor = (num: number, isBanker: boolean = false): string => {
     if (isBanker) {
@@ -539,73 +542,100 @@ const { speakPartnerIntro, speakPredictionSummary, getPartnerMethod, getPartnerN
                 Report Generated on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </span>
             </div>
+            
+            {/* Date and Facebook Share Button */}
+            <div className="flex items-center justify-between mb-4 print:mb-2">
+              <div className="flex items-center gap-2 text-sm text-[#f5e6c8]/60 print:text-gray-600">
+                <Calendar className="w-4 h-4" />
+                <span>
+                  {new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+              
+              {/* Facebook Share Button */}
+              <FacebookShareButton 
+                url={window.location.href}
+                quote={`My AI-generated lucky numbers from DragonGP! 🎰 ${partner?.name?.[language] || ''} predicted: ${predictions[0]?.join(', ') || ''}`}
+                size="sm"
+                showText={false}
+                className="print:hidden"
+              />
+            </div>
+
             <div className="flex items-center gap-4 mb-5 print:gap-3 print:mb-3">
               <div className="w-16 h-16 sm:w-18 md:w-20 md:h-20 max-w-[100px] sm:max-w-[120px] md:max-w-[150px] rounded-full overflow-hidden flex-shrink-0 print:w-12 print:h-12" style={{ boxShadow: `0 0 25px ${theme.glow}, 0 4px 15px rgba(0,0,0,0.3)`, border: `3px solid ${theme.primary}80`, aspectRatio: '1 / 1' }}>
                 <img src={partner.image} alt={partner.name[language]} className="w-full h-full object-cover max-w-[150px] max-h-[150px]" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-  <h1 className="text-2xl md:text-3xl font-black mb-1 tracking-tight print:text-xl print:text-gray-900"
-    style={{
-      color: theme.primary,
-      textShadow: `0 0 30px ${theme.glow}, 0 2px 4px rgba(0,0,0,0.3)`,
-      fontFamily: "'Georgia', serif",
-      letterSpacing: "-0.02em",
-    }}
-  >
-    {partner.name[language]}{t.reportTitle}
-  </h1>
-  
-  {/* Voice Button with Status Text */}
-  {isSupported && (
-    <button
-      onClick={handleVoicePlay}
-      className={`p-2 rounded-full transition-all duration-300 flex items-center gap-1.5 print:hidden ${
-        isSpeaking 
-          ? 'bg-red-500/20 border border-red-500/50 animate-pulse' 
-          : 'hover:bg-white/10'
-      }`}
-      title={isSpeaking ? t.stopVoice : t.listenReport}
-    >
-      {isSpeaking ? (
-        <>
-          <VolumeX className="w-5 h-5" style={{ color: theme.primary }} />
-          <span className="text-xs font-medium" style={{ color: theme.primary }}>
-            {t.stopVoice}
-          </span>
-        </>
-      ) : (
-        <>
-          <Volume2 className="w-5 h-5" style={{ color: theme.primary }} />
-          <span className="text-xs font-medium" style={{ color: theme.primary }}>
-            {t.listenReport}
-          </span>
-        </>
-      )}
-    </button>
-  )}
-  
-  {/* Game Badge */}
-  <span 
-    className="px-3 py-1 rounded-full text-xs font-bold print:bg-gray-200 print:text-gray-800"
-    style={{
-      background: gameType === "tw" 
-        ? "linear-gradient(135deg, #FF6B35 0%, #FF4500 100%)"
-        : "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
-      color: "#000000",
-      boxShadow: "0 0 15px rgba(255, 215, 0, 0.3)",
-    }}
-  >
-    <Trophy className="w-3 h-3 inline mr-1" />
-    {activeData.label[language] || activeData.label.en}
-  </span>
-</div>
+                  <h1 className="text-2xl md:text-3xl font-black mb-1 tracking-tight print:text-xl print:text-gray-900"
+                    style={{
+                      color: theme.primary,
+                      textShadow: `0 0 30px ${theme.glow}, 0 2px 4px rgba(0,0,0,0.3)`,
+                      fontFamily: "'Georgia', serif",
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {partner.name[language]}{t.reportTitle}
+                  </h1>
+                  
+                  {/* Voice Button with Status Text */}
+                  {isSupported && (
+                    <button
+                      onClick={handleVoicePlay}
+                      className={`p-2 rounded-full transition-all duration-300 flex items-center gap-1.5 print:hidden ${
+                        isSpeaking 
+                          ? 'bg-red-500/20 border border-red-500/50 animate-pulse' 
+                          : 'hover:bg-white/10'
+                      }`}
+                      title={isSpeaking ? t.stopVoice : t.listenReport}
+                    >
+                      {isSpeaking ? (
+                        <>
+                          <VolumeX className="w-5 h-5" style={{ color: theme.primary }} />
+                          <span className="text-xs font-medium" style={{ color: theme.primary }}>
+                            {t.stopVoice}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-5 h-5" style={{ color: theme.primary }} />
+                          <span className="text-xs font-medium" style={{ color: theme.primary }}>
+                            {t.listenReport}
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  
+                  {/* Game Badge */}
+                  <span 
+                    className="px-3 py-1 rounded-full text-xs font-bold print:bg-gray-200 print:text-gray-800"
+                    style={{
+                      background: gameType === "tw" 
+                        ? "linear-gradient(135deg, #FF6B35 0%, #FF4500 100%)"
+                        : "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
+                      color: "#000000",
+                      boxShadow: "0 0 15px rgba(255, 215, 0, 0.3)",
+                    }}
+                  >
+                    <Trophy className="w-3 h-3 inline mr-1" />
+                    {activeData.label[language] || activeData.label.en}
+                  </span>
+                </div>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full print:bg-gray-100 print:border print:border-gray-300" style={{ background: `linear-gradient(135deg, ${theme.primary}25 0%, ${theme.primary}10 100%)`, border: `1px solid ${theme.primary}40` }}>
                   <BarChart3 className="w-4 h-4 print:w-3 print:h-3 print:text-gray-600" style={{ color: theme.secondary }} />
                   <span className="text-sm font-semibold print:text-gray-700" style={{ color: theme.secondary }}>{partnerMath.mathModule[language]}</span>
                 </div>
               </div>
             </div>
+            
             <div className="p-3 rounded-xl mb-4 print:p-2 print:mb-3 print:bg-gray-50 print:border print:border-gray-200" style={{ background: `linear-gradient(135deg, ${theme.primary}12 0%, ${theme.primary}05 100%)`, border: `1px solid ${theme.primary}25`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05)` }}>
               <div className="flex items-start gap-2">
                 <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5 print:text-gray-600" style={{ color: theme.primary }} />

@@ -1,114 +1,150 @@
-import { useSpeech } from './useSpeech';
+// src/hooks/useMark6Speech.ts
+import { useState, useCallback, useRef, useEffect } from 'react';
 
-interface Mark6SpeechOptions {
-  lang: string;
+interface UseMark6SpeechProps {
+  lang?: string;
 }
 
-export const useMark6Speech = (options: Mark6SpeechOptions) => {
-  const { lang } = options;
-  const { speak, isSpeaking, stop, isSupported } = useSpeech({ lang });
+export function useMark6Speech({ lang = 'en-US' }: UseMark6SpeechProps = {}) {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-  // Simple speak function
-  const speakSimple = (text: string) => {
-    if (!text || text.trim().length === 0) return;
-    speak(text);
-  };
+  // Stop any ongoing speech
+  const stop = useCallback(() => {
+    if (isSupported) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, [isSupported]);
 
-  // Welcome message for Mark6 Game
-  const speakWelcome = (gameType: 'hk' | 'tw') => {
-    const gameName = gameType === 'tw' ? '台灣大樂透' : '香港六合彩';
+  // Speak text with the given language
+  const speak = useCallback((text: string, language: string = lang) => {
+    if (!isSupported || !text) return;
     
-    const messages: Record<string, string> = {
-      'en': `Welcome to ${gameName}. Select your AI partner.`,
-      'zh-HK': `歡迎到${gameName}。選AI夥伴。`,
-      'zh-CN': `欢迎到${gameName}。选AI伙伴。`,
+    // Cancel any ongoing speech
+    stop();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language;
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    
+    // Try to find a good voice
+    const voices = window.speechSynthesis.getVoices();
+    let selectedVoice = null;
+    
+    if (language === 'zh-HK') {
+      selectedVoice = voices.find(v => v.lang.includes('zh-HK') || v.lang.includes('yue'));
+      if (!selectedVoice) selectedVoice = voices.find(v => v.lang.includes('zh'));
+    } else if (language === 'zh-CN') {
+      selectedVoice = voices.find(v => v.lang.includes('zh-CN') || v.lang.includes('cmn'));
+      if (!selectedVoice) selectedVoice = voices.find(v => v.lang.includes('zh'));
+    } else {
+      selectedVoice = voices.find(v => v.lang.includes('en-US') && v.name.includes('Google'));
+      if (!selectedVoice) selectedVoice = voices.find(v => v.lang.includes('en-US'));
+      if (!selectedVoice) selectedVoice = voices.find(v => v.lang.includes('en'));
+    }
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, [isSupported, lang, stop]);
+
+  // Get partner name in the correct language
+  const getPartnerName = useCallback((partnerId: string, language: string): string => {
+    const names: Record<string, Record<string, string>> = {
+      elon: { en: 'Elon', 'zh-TW': '伊隆', 'zh-CN': '伊隆' },
+      'god-of-gambling': { en: 'God of Gambling', 'zh-TW': '賭神', 'zh-CN': '赌神' },
+      'lucky-star': { en: 'Lucky Star', 'zh-TW': '幸運星', 'zh-CN': '幸运星' },
+      achelois: { en: 'Achelois', 'zh-TW': '月光女神', 'zh-CN': '月光女神' },
+      aladdin: { en: 'Aladdin', 'zh-TW': '阿拉丁', 'zh-CN': '阿拉丁' },
     };
-    
-    const message = messages[lang] || messages['en'];
-    speakSimple(message);
-  };
+    return names[partnerId]?.[language] || partnerId;
+  }, []);
 
-  // Partner introduction - ONLY METHOD NAME (WORKING VERSION)
-  const speakPartnerIntro = (partnerId: string) => {
-    const methodNames: Record<string, Record<string, string>> = {
-      'en': {
-        'elon': 'Banker and Leg Strategy',
-        'god-of-gambling': 'Chaos Theory',
-        'lucky-star': 'Monte Carlo Simulation',
-        'achelois': 'Neural Network Entropy',
-        'aladdin': 'Quantum Spooky Sync',
-      },
-      'zh-HK': {
-        'elon': '膽拖策略',
-        'god-of-gambling': '混沌理論',
-        'lucky-star': '蒙特卡羅模擬',
-        'achelois': '神經網絡熵值',
-        'aladdin': '量子幽靈同步',
-      },
-      'zh-CN': {
-        'elon': '胆拖策略',
-        'god-of-gambling': '混沌理论',
-        'lucky-star': '蒙特卡罗模拟',
-        'achelois': '神经网络熵值',
-        'aladdin': '量子幽灵同步',
-      },
+  // Get partner method in the correct language
+  const getPartnerMethod = useCallback((partnerId: string, language: string): string => {
+    const methods: Record<string, Record<string, string>> = {
+      elon: { en: 'Banker and Leg Strategy', 'zh-TW': '膽拖策略', 'zh-CN': '胆拖策略' },
+      'god-of-gambling': { en: 'Chaos Theory Logic', 'zh-TW': '混沌理論', 'zh-CN': '混沌理论' },
+      'lucky-star': { en: 'Monte Carlo Simulation', 'zh-TW': '蒙特卡羅模擬', 'zh-CN': '蒙特卡罗模拟' },
+      achelois: { en: 'Neural Network Entropy', 'zh-TW': '神經網絡熵值分析', 'zh-CN': '神经网络熵值分析' },
+      aladdin: { en: 'Quantum Spooky Sync', 'zh-TW': '量子幽靈同步', 'zh-CN': '量子幽灵同步' },
     };
-    
-    const langMessages = methodNames[lang] || methodNames['en'];
-    const message = langMessages[partnerId] || 'Analysis Result';
-    speakSimple(message);
-  };
+    return methods[partnerId]?.[language] || partnerId;
+  }, []);
 
-  // Prediction summary - DISABLED (kept as empty function for compatibility)
-  const speakPredictionSummary = (numbers: number[][]) => {
-    // Intentionally empty - this avoids the cut-off issue
-  };
-
-  // Get partner method name (for display)
-  const getPartnerMethod = (partnerId: string, language: string): string => {
-    const isChinese = language === 'zh-TW' || language === 'zh-CN';
+  // FULL REPORT - Combined partner intro + prediction summary (no interruption)
+  const speakFullReport = useCallback((partnerId: string, partnerName: string, method: string, gameType: string, predictions: number[][]) => {
+    if (!predictions || predictions.length === 0) {
+      console.warn('No predictions available for speech');
+      return;
+    }
     
-    const methods: Record<string, { en: string; zh: string }> = {
-      'elon': { en: 'Banker & Leg Strategy', zh: '膽拖策略' },
-      'god-of-gambling': { en: 'Chaos Theory', zh: '混沌理論' },
-      'lucky-star': { en: 'Monte Carlo Simulation', zh: '蒙特卡羅模擬' },
-      'achelois': { en: 'Neural Network Entropy', zh: '神經網絡熵值' },
-      'aladdin': { en: 'Quantum Spooky Sync', zh: '量子幽靈同步' },
+    const firstSet = predictions[0] || [];
+    if (firstSet.length === 0) {
+      console.warn('First set is empty');
+      return;
+    }
+    
+    const gameName = gameType === 'tw' 
+      ? (lang === 'zh-HK' || lang === 'zh-TW' ? '台灣大樂透' : lang === 'zh-CN' ? '台湾大乐透' : 'Taiwan Big Lotto')
+      : (lang === 'zh-HK' || lang === 'zh-TW' ? '香港六合彩' : lang === 'zh-CN' ? '香港六合彩' : 'Hong Kong Mark 6');
+    
+    const numbersStr = firstSet.join(lang === 'zh-HK' || lang === 'zh-TW' ? '、' : lang === 'zh-CN' ? '、' : ', ');
+    
+    // Build the full message in one go based on language
+    let message = '';
+    
+    // Determine which language to use
+    const isCantonese = lang === 'zh-HK' || lang === 'zh-TW';
+    const isMandarin = lang === 'zh-CN';
+    const isEnglish = lang === 'en-US' || lang === 'en';
+    
+    if (isEnglish) {
+      message = `Your AI partner ${partnerName} is using ${method}. For ${gameName}, the first set of predicted numbers are: ${numbersStr}. Good luck to you!`;
+    } else if (isCantonese) {
+      const gameNameCn = gameType === 'tw' ? '台灣大樂透' : '香港六合彩';
+      message = `您的 AI 夥伴 ${partnerName} 正在使用 ${method}。對於 ${gameNameCn}，第一組預測號碼是：${numbersStr}。祝您好運！`;
+    } else if (isMandarin) {
+      const gameNameCn = gameType === 'tw' ? '台湾大乐透' : '香港六合彩';
+      message = `您的 AI 伙伴 ${partnerName} 正在使用 ${method}。对于 ${gameNameCn}，第一组预测号码是：${numbersStr}。祝您好运！`;
+    } else {
+      // Fallback to English
+      message = `Your AI partner ${partnerName} is using ${method}. For ${gameName}, the first set of predicted numbers are: ${numbersStr}. Good luck to you!`;
+    }
+    
+    console.log('📢 Speaking full report:', message);
+    console.log('🗣️ Language:', lang);
+    console.log('📊 First set:', firstSet);
+    
+    // Speak the full message - no interruption
+    speak(message, lang);
+  }, [speak, lang]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      stop();
     };
-    
-    const method = methods[partnerId] || methods['elon'];
-    return isChinese ? method.zh : method.en;
-  };
-
-  const getPartnerName = (partnerId: string, language: string): string => {
-    const isChinese = language === 'zh-TW' || language === 'zh-CN';
-    
-    const names: Record<string, { en: string; zh: string }> = {
-      'elon': { en: 'Elon', zh: '馬神' },
-      'god-of-gambling': { en: 'God of Gambling', zh: '賭神' },
-      'lucky-star': { en: 'Lucky Star', zh: '幸運星' },
-      'achelois': { en: 'Achelois', zh: '月光女神' },
-      'aladdin': { en: 'Aladdin', zh: '阿拉丁' },
-    };
-    
-    const name = names[partnerId] || names['elon'];
-    return isChinese ? name.zh : name.en;
-  };
-
-  // Combined voice function - ONLY method name (no prediction summary)
-  const speakFullReport = (partnerId: string) => {
-    speakPartnerIntro(partnerId);
-  };
+  }, [stop]);
 
   return {
-    speakWelcome,
-    speakPartnerIntro,
-    speakPredictionSummary,
-    speakFullReport,
-    getPartnerMethod,
-    getPartnerName,
     isSpeaking,
     stop,
+    speak,
+    speakFullReport,
+    getPartnerName,
+    getPartnerMethod,
     isSupported,
   };
-};
+}

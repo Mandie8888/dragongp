@@ -67,9 +67,9 @@ export default function Mark6Game() {
   }>({});
 
   // Voice controls
-  const { speakWelcome, isSpeaking, stop, isSupported } = useMark6Speech({ 
-  lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
-});
+  const { speak, speakWelcome, isSpeaking, stop, isSupported, speakFullReport, getPartnerName, getPartnerMethod } = useMark6Speech({ 
+    lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
+  });
 
   const content = {
     en: {
@@ -269,6 +269,56 @@ export default function Mark6Game() {
     setUserSelections({});
   };
 
+  // Handle voice welcome with full report
+  const handleVoiceWelcome = () => {
+    if (isSpeaking) {
+      stop();
+    } else {
+      // If a partner is selected, speak the full report
+      if (selectedPartner) {
+        const partnerName = getPartnerName(selectedPartner.id, language);
+        const method = getPartnerMethod(selectedPartner.id, language);
+        
+        // Generate mock predictions for voice demo
+        const mockPredictions = generateMockPredictions();
+        
+        speakFullReport(selectedPartner.id, partnerName, method, selectedGame, mockPredictions);
+      } else {
+        // Otherwise speak welcome message
+        const gameName = selectedGame === 'tw' 
+          ? (language === 'zh-TW' ? '台灣大樂透' : language === 'zh-CN' ? '台湾大乐透' : 'Taiwan Big Lotto') 
+          : (language === 'zh-TW' ? '香港六合彩' : language === 'zh-CN' ? '香港六合彩' : 'Hong Kong Mark 6');
+        
+        let welcomeMsg = '';
+        if (language === 'zh-TW') {
+          welcomeMsg = `歡迎來到 DragonGP AI。您即將開始玩 ${gameName}。請選擇您的 AI 夥伴開始概率分析。祝您好運！`;
+        } else if (language === 'zh-CN') {
+          welcomeMsg = `欢迎来到 DragonGP AI。您即将开始玩 ${gameName}。请选择您的 AI 伙伴开始概率分析。祝您好运！`;
+        } else {
+          welcomeMsg = `Welcome to DragonGP AI. You are about to play ${gameName}. Select your AI partner to begin your probability analysis. Good luck!`;
+        }
+        const voiceLang = language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US';
+        speak(welcomeMsg, voiceLang);
+      }
+    }
+  };
+
+  // Generate mock predictions for voice demo
+  const generateMockPredictions = (): number[][] => {
+    const sets: number[][] = [];
+    for (let i = 0; i < 10; i++) {
+      const nums: number[] = [];
+      while (nums.length < 6) {
+        const num = Math.floor(Math.random() * 49) + 1;
+        if (!nums.includes(num)) {
+          nums.push(num);
+        }
+      }
+      sets.push(nums.sort((a, b) => a - b));
+    }
+    return sets;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -286,7 +336,7 @@ export default function Mark6Game() {
       <main className="flex-1 pt-16 pb-4 relative z-10">
         <div className="container mx-auto px-4">
           
-          {/* Header with Voice Button */}
+          {/* Header with Voice Button at the end */}
           <div className="text-center mb-3">
             <div className="flex items-center justify-center gap-3 mb-1">
               <h1 className="text-2xl md:text-3xl font-black tracking-wider text-primary font-display"
@@ -294,29 +344,25 @@ export default function Mark6Game() {
               >
                 {t.title}
               </h1>
-              {/* Voice Button */}
+            </div>
+            <div className="mb-2 flex items-center justify-center gap-2 flex-wrap">
+              <InlineLanguageSwitcher />
+              {/* Voice Button - placed after language switcher */}
               {isSupported && (
                 <button
-                  onClick={() => {
-                    if (isSpeaking) {
-                      stop();
-                    } else {
-                      speakWelcome(selectedGame);
-                    }
-                  }}
-                  className="p-2 rounded-full hover:bg-primary/10 transition-colors"
-                  title={isSpeaking ? t.stopVoice : t.voiceWelcome}
+                  onClick={handleVoiceWelcome}
+                  className={`p-2 rounded-full transition-colors ${
+                    isSpeaking ? 'bg-red-500/20 animate-pulse' : 'hover:bg-primary/10'
+                  }`}
+                  title={isSpeaking ? t.stopVoice : (selectedPartner ? t.voiceWelcome + " (with partner)" : t.voiceWelcome)}
                 >
                   {isSpeaking ? (
-                    <VolumeX className="w-5 h-5 text-primary" />
+                    <VolumeX className="w-5 h-5 text-red-400" />
                   ) : (
                     <Volume2 className="w-5 h-5 text-primary" />
                   )}
                 </button>
               )}
-            </div>
-            <div className="mb-2">
-              <InlineLanguageSwitcher />
             </div>
             <p className="text-foreground/60 text-xs">{t.subtitle}</p>
           </div>
