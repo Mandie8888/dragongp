@@ -14,7 +14,7 @@ import InlineLanguageSwitcher from "@/components/InlineLanguageSwitcher";
 import MobileMark6Footer from "@/components/MobileMark6Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, AlertTriangle, Check, X, Star, Zap, Volume2 } from "lucide-react";
+import { Search, Loader2, AlertTriangle, Check, X, Star, Zap, Volume2, VolumeX } from "lucide-react";
 import yearOfHorseImg from "@/assets/year-of-horse.png";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,35 +144,34 @@ export default function AIStocks() {
   const [showOutOfCreditsPopup, setShowOutOfCreditsPopup] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>("");
   const [isAnalysisComplete, setIsAnalysisComplete] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Speak welcome message
- const [isSpeaking, setIsSpeaking] = useState(false);
-const speakWelcome = () => {
-  // Prevent multiple simultaneous speech
-  if (isSpeaking) {
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    return;
-  }
+  const speakWelcome = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
 
-  const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
-  const isChinese = lang === 'zh';
-  
-  const text = isChinese 
-    ? '歡迎來到 DragonGP AI 股票分析平台。請在上方輸入股票代碼，例如 NVDA、TSLA、0700.HK 或 2330.TW，然後點擊開始分析按鈕，即可獲得 AI 驅動的技術分析和預測。'
-    : 'Welcome to DragonGP AI Stock Analysis Platform. Please enter a stock symbol above, such as NVDA, TSLA, 0700.HK, or 2330.TW, then click the Analyze button to get AI-powered technical analysis and predictions.';
-  
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US';
-  utterance.rate = 0.85;
-  utterance.pitch = 1;
-  
-  utterance.onstart = () => setIsSpeaking(true);
-  utterance.onend = () => setIsSpeaking(false);
-  utterance.onerror = () => setIsSpeaking(false);
-  
-  window.speechSynthesis.speak(utterance);
-};
+    const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
+    const isChinese = lang === 'zh';
+    
+    const text = isChinese 
+      ? '歡迎來到 DragonGP AI 股票分析平台。請在上方輸入股票代碼，例如 NVDA、TSLA、0700.HK 或 2330.TW，然後點擊開始分析按鈕，即可獲得 AI 驅動的技術分析和預測。'
+      : 'Welcome to DragonGP AI Stock Analysis Platform. Please enter a stock symbol above, such as NVDA, TSLA, 0700.HK, or 2330.TW, then click the Analyze button to get AI-powered technical analysis and predictions.';
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US';
+    utterance.rate = 0.85;
+    utterance.pitch = 1;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,24 +231,71 @@ const speakWelcome = () => {
         return;
       }
 
+      console.log(`Fetching data for: ${pendingSymbol} (${pendingMarket})`);
+      
       const { data, error } = await supabase.functions.invoke("fetch-stock-data", {
         body: { symbol: pendingSymbol, market: pendingMarket },
       });
 
-      if (error || data?.error) {
-        console.error("Error fetching stock data:", error || data?.error);
+      if (error) {
+        console.error("Edge function error:", error);
         setErrorMessage(t.fetchError);
         setShowError(true);
         setIsLoading(false);
         return;
       }
 
+      if (data?.error) {
+        console.error("Data error:", data.error);
+        setErrorMessage(data.error || t.fetchError);
+        setShowError(true);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Stock data received:", data);
+
+      if (!data || typeof data.price !== 'number') {
+        console.error("Invalid data structure:", data);
+        setErrorMessage("Invalid data received from API");
+        setShowError(true);
+        setIsLoading(false);
+        return;
+      }
+
       const basePrice = data.price;
+      
+      // Get RSI and MACD from data or use defaults
       const rsi = typeof data.rsi === "number" ? data.rsi : 50;
       const macd = typeof data.macd === "number" ? data.macd : 0;
       const macdSignal = typeof data.macdSignal === "number" ? data.macdSignal : 0;
       const macdHistogram = typeof data.macdHistogram === "number" ? data.macdHistogram : 0;
 
+      // Use the change percent from the edge function (already corrected)
+      let changePercent = data.changePercent || 0;
+      
+      // Additional safety check - if change percent seems wrong, recalculate
+      if (data.price && data.previousClose && data.previousClose > 0) {
+        const calculatedChange = ((data.price - data.previousClose) / data.previousClose) * 100;
+        
+        // If the API says positive but calculation says negative (or vice versa)
+        if ((data.changePercent > 0 && calculatedChange < 0) || 
+            (data.changePercent < 0 && calculatedChange > 0)) {
+          console.log(`⚠️ API shows ${data.changePercent}% but calculation shows ${calculatedChange}%`);
+          console.log("Using calculated value (API might be showing after-hours data)");
+          changePercent = calculatedChange;
+        }
+        
+        // If values are significantly different (more than 1%), use calculated
+        if (Math.abs(data.changePercent - calculatedChange) > 1) {
+          console.log(`⚠️ Large difference: API ${data.changePercent}% vs calculated ${calculatedChange}%`);
+          changePercent = calculatedChange;
+        }
+      }
+      
+      console.log(`Final change percent: ${changePercent}%`);
+
+      // Calculate AI probability based on RSI and MACD
       const rsiBias = (rsi - 50) / 50;
       const macdBias = Math.max(-1, Math.min(1, macdHistogram));
       const directionScore = rsiBias * 0.6 + macdBias * 0.4;
@@ -259,10 +305,10 @@ const speakWelcome = () => {
       const holdPct = Math.max(0, 100 - buyPct - sellPct);
 
       const reportData = {
-        ticker: data.symbol,
-        name: data.companyName,
+        ticker: data.symbol || pendingSymbol,
+        name: data.companyName || data.symbol || pendingSymbol,
         price: data.price,
-        change: data.changePercent,
+        change: parseFloat(changePercent.toFixed(2)),
         rsi,
         macd,
         macdSignal,
@@ -270,18 +316,19 @@ const speakWelcome = () => {
         probability: prob,
         highTarget: parseFloat((basePrice * 1.15).toFixed(2)),
         lowTarget: parseFloat((basePrice * 0.88).toFixed(2)),
-        high52Week: parseFloat((basePrice * 1.35).toFixed(2)),
-        low52Week: parseFloat((basePrice * 0.65).toFixed(2)),
-        volume: data.volume,
+        high52Week: data.high52Week || parseFloat((basePrice * 1.35).toFixed(2)),
+        low52Week: data.low52Week || parseFloat((basePrice * 0.65).toFixed(2)),
+        volume: data.volume || 0,
+        volumeDisplay: data.volumeDisplay || data.volume?.toString() || "0",
         buyPercent: buyPct,
         holdPercent: holdPct,
         sellPercent: sellPct,
         aiSummary: "",
-        currency: data.currency,
+        currency: data.currency || "USD",
         market: pendingMarket,
-        dayHigh: data.dayHigh || data.high,
-        dayLow: data.dayLow || data.low,
-        previousClose: data.previousClose || (data.price - data.change),
+        dayHigh: data.dayHigh || data.high || basePrice,
+        dayLow: data.dayLow || data.low || basePrice,
+        previousClose: data.previousClose || basePrice,
         companyDescription: data.longBusinessSummary || null,
         sector: data.sector || null,
         industry: data.industry || null,
@@ -292,15 +339,21 @@ const speakWelcome = () => {
         declaredDividendPerShare: data.declaredDividendPerShare || null,
         exDividendDate: data.exDividendDate || null,
         trailingPE: data.trailingPE,
+        marketState: data.marketState || "REGULAR",
       };
 
       setIsLoading(false);
-      const summaryText = `${data.companyName || data.symbol} 分析完成。價格: ${data.price} ${data.currency || 'USD'}，RSI: ${rsi.toFixed(1)}，MACD: ${macd.toFixed(2)}，AI預測概率: ${prob}%。${buyPct}% 買入，${holdPct}% 持有，${sellPct}% 賣出。`;
+      
+      // Create summary text for voice and display
+      const changeDisplay = changePercent > 0 ? `+${changePercent.toFixed(2)}%` : `${changePercent.toFixed(2)}%`;
+      const summaryText = `${data.companyName || data.symbol} 分析完成。價格: ${data.price} ${data.currency || 'USD'}，${changeDisplay}，RSI: ${rsi.toFixed(1)}，MACD: ${macd.toFixed(2)}，AI預測概率: ${prob}%。${buyPct}% 買入，${holdPct}% 持有，${sellPct}% 賣出。`;
       setAnalysisResult(summaryText);
       setIsAnalysisComplete(true);
+      
+      // Navigate to report page with data
       navigate("/report", { state: { reportData } });
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error in handleAcceptDisclaimer:", err);
       setErrorMessage(t.fetchError);
       setShowError(true);
       setIsLoading(false);
@@ -481,28 +534,27 @@ const speakWelcome = () => {
               lang={language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US'}
             />
             
-            {/* Speaker Button - Always visible */}
             {/* Speaker Button - Toggle on/off */}
-<Button
-  variant="outline"
-  size="icon"
-  className="h-10 w-10"
-  onClick={() => {
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    } else {
-      speakWelcome();
-    }
-  }}
-  title={isSpeaking ? "Stop speaking" : "Read welcome message"}
->
-  {isSpeaking ? (
-    <VolumeX className="h-4 w-4 text-red-500" />
-  ) : (
-    <Volume2 className="h-4 w-4" />
-  )}
-</Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10"
+              onClick={() => {
+                if (isSpeaking) {
+                  window.speechSynthesis.cancel();
+                  setIsSpeaking(false);
+                } else {
+                  speakWelcome();
+                }
+              }}
+              title={isSpeaking ? "Stop speaking" : "Read welcome message"}
+            >
+              {isSpeaking ? (
+                <VolumeX className="h-4 w-4 text-red-500" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </Button>
             
             <GatewaySelector variant="minimal" />
             <QuickAddButton className="h-10" />
