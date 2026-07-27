@@ -129,7 +129,7 @@ serve(async (req) => {
     }
 
     // Use Yahoo Finance API with proper endpoint - get more data for better RSI calculation
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1y&interval=1d`;
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=3mo&interval=1d`;
     console.log(`Fetching from Yahoo: ${yahooUrl}`);
     
     const response = await fetch(yahooUrl, {
