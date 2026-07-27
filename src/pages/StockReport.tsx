@@ -34,7 +34,8 @@ import {
   Volume2,
   Play,
   Pause,
-  Square
+  Square,
+  Share2
 } from "lucide-react";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { Link } from "react-router-dom";
@@ -43,7 +44,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useSpeech } from "@/hooks/useSpeech";
-import { FacebookShareButton } from "@/components/FacebookShareButton";
+import founderIcon from "@/assets/founder-icon.png";
 
 interface ReportData {
   ticker: string;
@@ -139,6 +140,10 @@ const translations = {
     play: "Play",
     pauseCtrl: "Pause",
     stop: "Stop",
+    shareFacebook: "Share on Facebook",
+    shareWhatsAppLabel: "Share on WhatsApp",
+    shareTwitter: "Share on Twitter",
+    shareLinkedIn: "Share on LinkedIn",
   },
   "zh-TW": {
     pageTitle: "AI 股票分析報告",
@@ -197,6 +202,10 @@ const translations = {
     play: "播放",
     pauseCtrl: "暫停",
     stop: "停止",
+    shareFacebook: "分享到 Facebook",
+    shareWhatsAppLabel: "分享到 WhatsApp",
+    shareTwitter: "分享到 Twitter",
+    shareLinkedIn: "分享到 LinkedIn",
   },
   "zh-CN": {
     pageTitle: "AI 股票分析报告",
@@ -255,6 +264,10 @@ const translations = {
     play: "播放",
     pauseCtrl: "暂停",
     stop: "停止",
+    shareFacebook: "分享到 Facebook",
+    shareWhatsAppLabel: "分享到 WhatsApp",
+    shareTwitter: "分享到 Twitter",
+    shareLinkedIn: "分享到 LinkedIn",
   },
 };
 
@@ -272,124 +285,228 @@ export default function StockReport() {
   const [showFeedback, setShowFeedback] = useState(false);
   const { incrementViews, shouldShowFeedback } = useReportViewTracker();
 
+  // Get the text-to-speech content for sharing
+  const getShareText = () => {
+    const data = reportData;
+    if (!data) return '';
+    
+    const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
+    const isChinese = lang === 'zh';
+    
+    // Determine RSI status
+    let rsiStatus = '';
+    let rsiInterpretation = '';
+    if (data.rsi !== undefined) {
+      if (data.rsi > 70) {
+        rsiStatus = isChinese ? '超買' : 'Overbought';
+        rsiInterpretation = isChinese ? '短期可能回調' : 'Potential pullback expected';
+      } else if (data.rsi < 30) {
+        rsiStatus = isChinese ? '超賣' : 'Oversold';
+        rsiInterpretation = isChinese ? '可能出現反彈' : 'Potential rebound expected';
+      } else {
+        rsiStatus = isChinese ? '中性' : 'Neutral';
+        rsiInterpretation = isChinese ? '動能平衡' : 'Balanced momentum';
+      }
+    }
+    
+    // Determine MACD status
+    let macdStatus = '';
+    let macdInterpretation = '';
+    if (data.macd !== undefined) {
+      if (data.macd > 0.5) {
+        macdStatus = isChinese ? '看好' : 'Bullish';
+        macdInterpretation = isChinese ? '多頭動能增強' : 'Bullish momentum increasing';
+      } else if (data.macd < -0.5) {
+        macdStatus = isChinese ? '看淡' : 'Bearish';
+        macdInterpretation = isChinese ? '空頭動能增強' : 'Bearish momentum increasing';
+      } else {
+        macdStatus = isChinese ? '中性' : 'Neutral';
+        macdInterpretation = isChinese ? '方向未明' : 'Direction unclear';
+      }
+    }
+    
+    // Determine overall recommendation
+    let recommendation = '';
+    let recommendationReason = '';
+    if (data.rsi !== undefined && data.rsi < 30) {
+      recommendation = isChinese ? '買入' : 'BUY';
+      recommendationReason = isChinese ? '超賣區間，可考慮分批買入' : 'Oversold zone, consider accumulating';
+    } else if (data.rsi !== undefined && data.rsi > 70) {
+      recommendation = isChinese ? '賣出' : 'SELL';
+      recommendationReason = isChinese ? '超買區間，可考慮分批獲利' : 'Overbought zone, consider taking profits';
+    } else if (data.buyPercent > 55) {
+      recommendation = isChinese ? '買入' : 'BUY';
+      recommendationReason = isChinese ? 'AI模型看好，買入信號較強' : 'AI model favors upside';
+    } else if (data.sellPercent > 55) {
+      recommendation = isChinese ? '賣出' : 'SELL';
+      recommendationReason = isChinese ? 'AI模型看淡，賣出信號較強' : 'AI model favors downside';
+    } else {
+      recommendation = isChinese ? '持有' : 'HOLD';
+      recommendationReason = isChinese ? '中性信號，等待更明確方向' : 'Neutral signals, wait for clarity';
+    }
+    
+    // Build the share text
+    const parts = [];
+    
+    // 1. Stock Watch of the Day
+    parts.push(isChinese ? `📊 今日關注股票：${data.name || data.ticker} (${data.ticker})` : `📊 Stock Watch of the Day: ${data.name || data.ticker} (${data.ticker})`);
+    
+    // 2. Price and change
+    const changeText = data.change !== undefined ? (data.change > 0 ? `+${data.change.toFixed(2)}%` : `${data.change.toFixed(2)}%`) : '';
+    parts.push(`${isChinese ? '💰 目前股價' : '💰 Current price'} ${data.currency || '$'}${data.price?.toFixed(2) || 'N/A'} (${changeText})`);
+    
+    // 3. RSI
+    if (data.rsi !== undefined) {
+      parts.push(`${isChinese ? '📈 RSI指標' : '📈 RSI'} ${data.rsi.toFixed(1)} (${rsiStatus}) - ${rsiInterpretation}`);
+    }
+    
+    // 4. MACD
+    if (data.macd !== undefined) {
+      parts.push(`${isChinese ? '📊 MACD指標' : '📊 MACD'} ${macdStatus} - ${macdInterpretation}`);
+    }
+    
+    // 5. AI Probability
+    if (data.probability !== undefined) {
+      parts.push(`${isChinese ? '🎯 AI預測概率' : '🎯 AI Probability'} ${data.probability}%`);
+    }
+    
+    // 6. Recommendation
+    parts.push(`${isChinese ? '💡 AI建議' : '💡 AI Recommendation'} ${recommendation} - ${recommendationReason}`);
+    
+    // 7. Targets
+    if (data.highTarget !== undefined && data.lowTarget !== undefined) {
+      parts.push(`${isChinese ? '🎯 目標價' : '🎯 Target'} ${data.currency || '$'}${data.highTarget?.toFixed(2) || 'N/A'} | ${isChinese ? '止蝕位' : 'Stop Loss'} ${data.currency || '$'}${data.lowTarget?.toFixed(2) || 'N/A'}`);
+    }
+    
+    // 8. 52-Week range
+    if (data.high52Week !== undefined && data.low52Week !== undefined) {
+      parts.push(`${isChinese ? '📆 52週區間' : '📆 52-week Range'} ${data.currency || '$'}${data.low52Week?.toFixed(2) || 'N/A'} - ${data.currency || '$'}${data.high52Week?.toFixed(2) || 'N/A'}`);
+    }
+    
+    // 9. Powered by
+    parts.push(`\n${isChinese ? '⚡ 由 DragonGP.AI 提供 AI 分析' : '⚡ Powered by DragonGP.AI'}`);
+    parts.push(`${isChinese ? '🔗 了解更多：' : '🔗 Learn more:'} https://dragongp.ai`);
+    
+    return parts.join('\n');
+  };
+
   // Voice controls for report
-  // Enhanced report text for TTS with all key details
-const getReportText = () => {
-  const data = reportData;
-  if (!data) return '';
-  
-  const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
-  const isChinese = lang === 'zh';
-  
-  // Determine RSI status
-  let rsiStatus = '';
-  let rsiInterpretation = '';
-  if (data.rsi !== undefined) {
-    if (data.rsi > 70) {
-      rsiStatus = isChinese ? '超買' : 'Overbought';
-      rsiInterpretation = isChinese ? '短期可能回調' : 'Potential pullback expected';
-    } else if (data.rsi < 30) {
-      rsiStatus = isChinese ? '超賣' : 'Oversold';
-      rsiInterpretation = isChinese ? '可能出現反彈' : 'Potential rebound expected';
-    } else {
-      rsiStatus = isChinese ? '中性' : 'Neutral';
-      rsiInterpretation = isChinese ? '動能平衡' : 'Balanced momentum';
+  const getReportText = () => {
+    const data = reportData;
+    if (!data) return '';
+    
+    const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
+    const isChinese = lang === 'zh';
+    
+    // Determine RSI status
+    let rsiStatus = '';
+    let rsiInterpretation = '';
+    if (data.rsi !== undefined) {
+      if (data.rsi > 70) {
+        rsiStatus = isChinese ? '超買' : 'Overbought';
+        rsiInterpretation = isChinese ? '短期可能回調' : 'Potential pullback expected';
+      } else if (data.rsi < 30) {
+        rsiStatus = isChinese ? '超賣' : 'Oversold';
+        rsiInterpretation = isChinese ? '可能出現反彈' : 'Potential rebound expected';
+      } else {
+        rsiStatus = isChinese ? '中性' : 'Neutral';
+        rsiInterpretation = isChinese ? '動能平衡' : 'Balanced momentum';
+      }
     }
-  }
-  
-  // Determine MACD status
-  let macdStatus = '';
-  let macdInterpretation = '';
-  if (data.macd !== undefined) {
-    if (data.macd > 0.5) {
-      macdStatus = isChinese ? '看好' : 'Bullish';
-      macdInterpretation = isChinese ? '多頭動能增強' : 'Bullish momentum increasing';
-    } else if (data.macd < -0.5) {
-      macdStatus = isChinese ? '看淡' : 'Bearish';
-      macdInterpretation = isChinese ? '空頭動能增強' : 'Bearish momentum increasing';
-    } else {
-      macdStatus = isChinese ? '中性' : 'Neutral';
-      macdInterpretation = isChinese ? '方向未明' : 'Direction unclear';
+    
+    // Determine MACD status
+    let macdStatus = '';
+    let macdInterpretation = '';
+    if (data.macd !== undefined) {
+      if (data.macd > 0.5) {
+        macdStatus = isChinese ? '看好' : 'Bullish';
+        macdInterpretation = isChinese ? '多頭動能增強' : 'Bullish momentum increasing';
+      } else if (data.macd < -0.5) {
+        macdStatus = isChinese ? '看淡' : 'Bearish';
+        macdInterpretation = isChinese ? '空頭動能增強' : 'Bearish momentum increasing';
+      } else {
+        macdStatus = isChinese ? '中性' : 'Neutral';
+        macdInterpretation = isChinese ? '方向未明' : 'Direction unclear';
+      }
     }
-  }
-  
-  // Determine overall recommendation
-  let recommendation = '';
-  let recommendationReason = '';
-  if (data.rsi !== undefined && data.rsi < 30) {
-    recommendation = isChinese ? '買入' : 'BUY';
-    recommendationReason = isChinese ? '超賣區間，可考慮分批買入' : 'Oversold zone, consider accumulating';
-  } else if (data.rsi !== undefined && data.rsi > 70) {
-    recommendation = isChinese ? '賣出' : 'SELL';
-    recommendationReason = isChinese ? '超買區間，可考慮分批獲利' : 'Overbought zone, consider taking profits';
-  } else if (data.buyPercent > 55) {
-    recommendation = isChinese ? '買入' : 'BUY';
-    recommendationReason = isChinese ? 'AI模型看好，買入信號較強' : 'AI model favors upside';
-  } else if (data.sellPercent > 55) {
-    recommendation = isChinese ? '賣出' : 'SELL';
-    recommendationReason = isChinese ? 'AI模型看淡，賣出信號較強' : 'AI model favors downside';
-  } else {
-    recommendation = isChinese ? '持有' : 'HOLD';
-    recommendationReason = isChinese ? '中性信號，等待更明確方向' : 'Neutral signals, wait for clarity';
-  }
-  
-  // Build the detailed report text
-  const parts = [];
-  
-  // 1. Company and ticker
-  parts.push(`${data.name || data.ticker} (${data.ticker})`);
-  
-  // 2. Price and change
-  const changeText = data.change !== undefined ? (data.change > 0 ? `上漲 ${data.change.toFixed(2)}%` : `下跌 ${Math.abs(data.change).toFixed(2)}%`) : '';
-  parts.push(`${isChinese ? '目前股價' : 'Current price'} ${data.currency || '$'}${data.price?.toFixed(2) || 'N/A'}，${changeText}`);
-  
-  // 3. RSI
-  if (data.rsi !== undefined) {
-    parts.push(`${isChinese ? 'RSI指標' : 'RSI'} ${data.rsi.toFixed(1)}，${rsiStatus}，${rsiInterpretation}`);
-  }
-  
-  // 4. MACD
-  if (data.macd !== undefined) {
-    parts.push(`${isChinese ? 'MACD指標' : 'MACD'} ${macdStatus}，${macdInterpretation}`);
-  }
-  
-  // 5. AI Probability
-  if (data.probability !== undefined) {
-    parts.push(`${isChinese ? 'AI預測概率' : 'AI Probability'} ${data.probability}%`);
-  }
-  
-  // 6. Buy/Hold/Sell breakdown
-  if (data.buyPercent !== undefined && data.holdPercent !== undefined && data.sellPercent !== undefined) {
-    parts.push(`${isChinese ? '買入' : 'Buy'} ${data.buyPercent}%，${isChinese ? '持有' : 'Hold'} ${data.holdPercent}%，${isChinese ? '賣出' : 'Sell'} ${data.sellPercent}%`);
-  }
-  
-  // 7. Targets
-  if (data.highTarget !== undefined && data.lowTarget !== undefined) {
-    parts.push(`${isChinese ? '目標價' : 'Target price'} ${data.currency || '$'}${data.highTarget?.toFixed(2) || 'N/A'}，${isChinese ? '止蝕位' : 'Stop loss'} ${data.currency || '$'}${data.lowTarget?.toFixed(2) || 'N/A'}`);
-  }
-  
-  // 8. Recommendation
-  parts.push(`${isChinese ? 'AI建議' : 'AI Recommendation'} ${recommendation}，${recommendationReason}`);
-  
-  // 9. 52-Week range
-  if (data.high52Week !== undefined && data.low52Week !== undefined) {
-    parts.push(`${isChinese ? '52週區間' : '52-week range'} ${data.currency || '$'}${data.low52Week?.toFixed(2) || 'N/A'} - ${data.currency || '$'}${data.high52Week?.toFixed(2) || 'N/A'}`);
-  }
-  
-  // 10. Volume
-  if (data.volume !== undefined) {
-    parts.push(`${isChinese ? '成交量' : 'Volume'} ${data.volume || 'N/A'}`);
-  }
-  
-  // 11. Market status
-  const isMarketOpen = getMarketStatus();
-  parts.push(isMarketOpen ? (isChinese ? '市場交易中' : 'Market Open') : (isChinese ? '市場已收盤' : 'Market Closed'));
-  
-  // 12. Final disclaimer
-  parts.push(isChinese ? '此分析僅供參考，不構成投資建議' : 'This analysis is for reference only, not investment advice');
-  
-  return parts.join('。 ');
-};
+    
+    // Determine overall recommendation
+    let recommendation = '';
+    let recommendationReason = '';
+    if (data.rsi !== undefined && data.rsi < 30) {
+      recommendation = isChinese ? '買入' : 'BUY';
+      recommendationReason = isChinese ? '超賣區間，可考慮分批買入' : 'Oversold zone, consider accumulating';
+    } else if (data.rsi !== undefined && data.rsi > 70) {
+      recommendation = isChinese ? '賣出' : 'SELL';
+      recommendationReason = isChinese ? '超買區間，可考慮分批獲利' : 'Overbought zone, consider taking profits';
+    } else if (data.buyPercent > 55) {
+      recommendation = isChinese ? '買入' : 'BUY';
+      recommendationReason = isChinese ? 'AI模型看好，買入信號較強' : 'AI model favors upside';
+    } else if (data.sellPercent > 55) {
+      recommendation = isChinese ? '賣出' : 'SELL';
+      recommendationReason = isChinese ? 'AI模型看淡，賣出信號較強' : 'AI model favors downside';
+    } else {
+      recommendation = isChinese ? '持有' : 'HOLD';
+      recommendationReason = isChinese ? '中性信號，等待更明確方向' : 'Neutral signals, wait for clarity';
+    }
+    
+    // Build the detailed report text
+    const parts = [];
+    
+    // 1. Company and ticker
+    parts.push(`${data.name || data.ticker} (${data.ticker})`);
+    
+    // 2. Price and change
+    const changeText = data.change !== undefined ? (data.change > 0 ? `上漲 ${data.change.toFixed(2)}%` : `下跌 ${Math.abs(data.change).toFixed(2)}%`) : '';
+    parts.push(`${isChinese ? '目前股價' : 'Current price'} ${data.currency || '$'}${data.price?.toFixed(2) || 'N/A'}，${changeText}`);
+    
+    // 3. RSI
+    if (data.rsi !== undefined) {
+      parts.push(`${isChinese ? 'RSI指標' : 'RSI'} ${data.rsi.toFixed(1)}，${rsiStatus}，${rsiInterpretation}`);
+    }
+    
+    // 4. MACD
+    if (data.macd !== undefined) {
+      parts.push(`${isChinese ? 'MACD指標' : 'MACD'} ${macdStatus}，${macdInterpretation}`);
+    }
+    
+    // 5. AI Probability
+    if (data.probability !== undefined) {
+      parts.push(`${isChinese ? 'AI預測概率' : 'AI Probability'} ${data.probability}%`);
+    }
+    
+    // 6. Buy/Hold/Sell breakdown
+    if (data.buyPercent !== undefined && data.holdPercent !== undefined && data.sellPercent !== undefined) {
+      parts.push(`${isChinese ? '買入' : 'Buy'} ${data.buyPercent}%，${isChinese ? '持有' : 'Hold'} ${data.holdPercent}%，${isChinese ? '賣出' : 'Sell'} ${data.sellPercent}%`);
+    }
+    
+    // 7. Targets
+    if (data.highTarget !== undefined && data.lowTarget !== undefined) {
+      parts.push(`${isChinese ? '目標價' : 'Target price'} ${data.currency || '$'}${data.highTarget?.toFixed(2) || 'N/A'}，${isChinese ? '止蝕位' : 'Stop loss'} ${data.currency || '$'}${data.lowTarget?.toFixed(2) || 'N/A'}`);
+    }
+    
+    // 8. Recommendation
+    parts.push(`${isChinese ? 'AI建議' : 'AI Recommendation'} ${recommendation}，${recommendationReason}`);
+    
+    // 9. 52-Week range
+    if (data.high52Week !== undefined && data.low52Week !== undefined) {
+      parts.push(`${isChinese ? '52週區間' : '52-week range'} ${data.currency || '$'}${data.low52Week?.toFixed(2) || 'N/A'} - ${data.currency || '$'}${data.high52Week?.toFixed(2) || 'N/A'}`);
+    }
+    
+    // 10. Volume
+    if (data.volume !== undefined) {
+      parts.push(`${isChinese ? '成交量' : 'Volume'} ${data.volume || 'N/A'}`);
+    }
+    
+    // 11. Market status
+    const isMarketOpen = getMarketStatus();
+    parts.push(isMarketOpen ? (isChinese ? '市場交易中' : 'Market Open') : (isChinese ? '市場已收盤' : 'Market Closed'));
+    
+    // 12. Final disclaimer
+    parts.push(isChinese ? '此分析僅供參考，不構成投資建議' : 'This analysis is for reference only, not investment advice');
+    
+    return parts.join('。 ');
+  };
 
   const { speak, pause, resume, stop, isSpeaking, isPaused, isSupported } = useSpeech({
     lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US',
@@ -575,6 +692,56 @@ const getReportText = () => {
     navigate("/ai-stocks");
   };
 
+  // Facebook Share Handler
+  const handleFacebookShare = () => {
+    if (!reportData) return;
+    
+    const shareText = getShareText();
+    const encodedText = encodeURIComponent(shareText);
+    const url = `https://www.facebook.com/dialog/feed?display=popup&quote=${encodedText}&hashtag=%23DragonGPAI&app_id=your_facebook_app_id`;
+    
+    // Open Facebook share dialog in a popup
+    window.open(
+      url,
+      'facebook-share-dialog',
+      'width=626,height=436,toolbar=0,menubar=0,scrollbars=yes'
+    );
+  };
+
+  // WhatsApp Share Handler
+  const handleWhatsAppShare = () => {
+    if (!reportData) return;
+    
+    const shareText = getShareText();
+    const encodedText = encodeURIComponent(shareText);
+    const url = `https://wa.me/?text=${encodedText}`;
+    
+    // Open WhatsApp in a new window/tab
+    window.open(url, '_blank');
+  };
+
+  // Twitter Share Handler
+  const handleTwitterShare = () => {
+    if (!reportData) return;
+    
+    const shareText = getShareText();
+    const encodedText = encodeURIComponent(shareText);
+    const url = `https://twitter.com/intent/tweet?text=${encodedText}&hashtags=DragonGPAI,StockAnalysis`;
+    
+    window.open(url, '_blank');
+  };
+
+  // LinkedIn Share Handler
+  const handleLinkedInShare = () => {
+    if (!reportData) return;
+    
+    const shareText = getShareText();
+    const encodedText = encodeURIComponent(shareText);
+    const url = `https://www.linkedin.com/sharing/share-offscreen/?summary=${encodedText}`;
+    
+    window.open(url, '_blank');
+  };
+
   if (!reportData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fafafa]">
@@ -691,6 +858,55 @@ const getReportText = () => {
   const dayLow = reportData.dayLow || reportData.price * 0.99;
   const prevClose = reportData.previousClose || reportData.price * (1 - reportData.change / 100);
 
+  // Custom share buttons with the new functionality
+  const ShareButtons = () => (
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Facebook Share Button */}
+      <Button
+        onClick={handleFacebookShare}
+        className="flex items-center gap-1.5 px-3 py-1.5 h-9 bg-[#1877F2] hover:bg-[#166FE5] text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        <span className="hidden sm:inline">{t.shareFacebook}</span>
+      </Button>
+
+      {/* WhatsApp Share Button */}
+      <Button
+        onClick={handleWhatsAppShare}
+        className="flex items-center gap-1.5 px-3 py-1.5 h-9 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        <span className="hidden sm:inline">{t.shareWhatsAppLabel}</span>
+      </Button>
+
+      {/* Twitter Share Button */}
+      <Button
+        onClick={handleTwitterShare}
+        className="flex items-center gap-1.5 px-3 py-1.5 h-9 bg-[#000000] hover:bg-[#1a1a1a] text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span className="hidden sm:inline">Twitter</span>
+      </Button>
+
+      {/* LinkedIn Share Button */}
+      <Button
+        onClick={handleLinkedInShare}
+        className="flex items-center gap-1.5 px-3 py-1.5 h-9 bg-[#0A66C2] hover:bg-[#0954A0] text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+        <span className="hidden sm:inline">LinkedIn</span>
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col print:bg-white print:text-[#334155] print:overflow-hidden max-w-[100vw] overflow-x-hidden" style={{ backgroundColor: '#e8e8e8' }}>
       <Navbar />
@@ -713,7 +929,7 @@ const getReportText = () => {
             <HorseLogoSVG size={500} asWatermark />
           </div>
 
-          {/* Voice Controls - Added here */}
+          {/* Voice Controls */}
           {isSupported && reportData && (
             <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-gold-500/10 rounded-lg border border-gold-500/20 print:hidden">
               <span className="text-xs text-muted-foreground mr-1">🔊 {t.readReport}:</span>
@@ -1212,71 +1428,77 @@ const getReportText = () => {
         </div>
       )}
 
-      // In StockReport.tsx, find the footer section and replace with this:
-
-<footer 
-  className="fixed bottom-0 left-0 right-0 py-2 md:py-3 px-3 md:px-4 print:hidden border-t z-40"
-  style={{ backgroundColor: "#fff", borderColor: "#ddd" }}
->
-  <div className="max-w-4xl mx-auto flex flex-col gap-2">
-    <div className="grid grid-cols-4 gap-1.5 md:flex md:gap-3 md:justify-center">
-      <Button
-        onClick={handleSelectAnother}
-        className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-md md:rounded-lg bg-[#003366] hover:bg-[#002244] text-white shadow-sm"
+      <footer 
+        className="fixed bottom-0 left-0 right-0 py-2 md:py-3 px-3 md:px-4 print:hidden border-t z-40"
+        style={{ backgroundColor: "#fff", borderColor: "#ddd" }}
       >
-        <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-        <span className="truncate">{t.selectAnother}</span>
-      </Button>
-      
-      <Button
-        onClick={handlePrint}
-        className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-gradient-to-r from-[#FFD700] to-[#B8860B] text-black hover:opacity-90 shadow-lg"
-      >
-        <Printer className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-        <span className="truncate">{t.printPDF}</span>
-      </Button>
-      
-      <WhatsAppShareButton
-        message={`Check out this AI Stock Analysis on ${reportData?.ticker || ''} from DragonGp.Ai!`}
-        className="h-9 md:h-11"
-        size="sm"
-      />
-      
-      {/* Facebook Share Button */}
-      <FacebookShareButton
-        url={window.location.href}
-        quote={`AI Stock Analysis: ${reportData?.ticker || ''} - ${reportData?.name || ''} | Price: ${currencySymbol}${reportData?.price?.toFixed(2) || 'N/A'} | DragonGp.Ai`}
-        size="sm"
-        className="h-9 md:h-11"
-      />
-    </div>
-    
-    <div className="grid grid-cols-2 gap-2 md:flex md:gap-3 md:justify-center">
-      <Button
-        onClick={handleSavePDF}
-        className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white shadow-lg"
-      >
-        <FileDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-        <span className="truncate">{t.savePDF}</span>
-      </Button>
-      <Button
-        onClick={handleSaveImage}
-        className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-lg"
-      >
-        <Image className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-        <span className="truncate">{t.saveImage}</span>
-      </Button>
-    </div>
-    
-    <Link
-      to="/generate-report"
-      className="flex items-center justify-center gap-2 w-full h-11 md:h-12 px-4 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white font-bold text-sm md:text-base rounded-xl shadow-lg shadow-green-500/30 transition-all duration-300 active:scale-[0.98]"
-    >
-      <Sparkles className="w-5 h-5 flex-shrink-0" />
-      <span className="text-center leading-tight">{t.goToMark6}</span>
-    </Link>
-  </div>
-</footer>
+        <div className="max-w-4xl mx-auto flex flex-col gap-2">
+          <div className="grid grid-cols-4 gap-1.5 md:flex md:gap-3 md:justify-center">
+            <Button
+              onClick={handleSelectAnother}
+              className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-md md:rounded-lg bg-[#003366] hover:bg-[#002244] text-white shadow-sm"
+            >
+              <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+              <span className="truncate">{t.selectAnother}</span>
+            </Button>
+            
+            <Button
+              onClick={handlePrint}
+              className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-gradient-to-r from-[#FFD700] to-[#B8860B] text-black hover:opacity-90 shadow-lg"
+            >
+              <Printer className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+              <span className="truncate">{t.printPDF}</span>
+            </Button>
+            
+            {/* WhatsApp Share Button - Using custom handler */}
+            <Button
+              onClick={handleWhatsAppShare}
+              className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white shadow-lg"
+            >
+              <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              <span className="truncate">{t.shareWhatsAppLabel}</span>
+            </Button>
+            
+            {/* Facebook Share Button - Using custom handler */}
+            <Button
+              onClick={handleFacebookShare}
+              className="flex items-center justify-center gap-1 md:gap-2 h-9 md:h-11 px-1.5 md:px-5 text-[0.55rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white shadow-lg"
+            >
+              <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              <span className="truncate">{t.shareFacebook}</span>
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 md:flex md:gap-3 md:justify-center">
+            <Button
+              onClick={handleSavePDF}
+              className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white shadow-lg"
+            >
+              <FileDown className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+              <span className="truncate">{t.savePDF}</span>
+            </Button>
+            <Button
+              onClick={handleSaveImage}
+              className="flex items-center justify-center gap-1.5 md:gap-2 h-9 md:h-11 px-2 md:px-5 text-[0.65rem] md:text-[0.9rem] font-bold rounded-lg md:rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-lg"
+            >
+              <Image className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+              <span className="truncate">{t.saveImage}</span>
+            </Button>
+          </div>
+          
+          <Link
+            to="/generate-report"
+            className="flex items-center justify-center gap-2 w-full h-11 md:h-12 px-4 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white font-bold text-sm md:text-base rounded-xl shadow-lg shadow-green-500/30 transition-all duration-300 active:scale-[0.98]"
+          >
+            <Sparkles className="w-5 h-5 flex-shrink-0" />
+            <span className="text-center leading-tight">{t.goToMark6}</span>
+          </Link>
+        </div>
+      </footer>
 
       <style>{`
         @media print {

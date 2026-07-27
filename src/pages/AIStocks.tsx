@@ -219,146 +219,143 @@ export default function AIStocks() {
     setShowDisclaimer(true);
   };
 
-  const handleAcceptDisclaimer = async () => {
-    setShowDisclaimer(false);
-    setIsLoading(true);
-    
-    try {
-      const creditSuccess = await consumeCredit();
-      if (!creditSuccess) {
-        setShowOutOfCreditsPopup(true);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log(`Fetching data for: ${pendingSymbol} (${pendingMarket})`);
-      
-      const { data, error } = await supabase.functions.invoke("fetch-stock-data", {
-        body: { symbol: pendingSymbol, market: pendingMarket },
-      });
-
-      if (error) {
-        console.error("Edge function error:", error);
-        setErrorMessage(t.fetchError);
-        setShowError(true);
-        setIsLoading(false);
-        return;
-      }
-
-      if (data?.error) {
-        console.error("Data error:", data.error);
-        setErrorMessage(data.error || t.fetchError);
-        setShowError(true);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("Stock data received:", data);
-
-      if (!data || typeof data.price !== 'number') {
-        console.error("Invalid data structure:", data);
-        setErrorMessage("Invalid data received from API");
-        setShowError(true);
-        setIsLoading(false);
-        return;
-      }
-
-      const basePrice = data.price;
-      
-      // Get RSI and MACD from data or use defaults
-      const rsi = typeof data.rsi === "number" ? data.rsi : 50;
-      const macd = typeof data.macd === "number" ? data.macd : 0;
-      const macdSignal = typeof data.macdSignal === "number" ? data.macdSignal : 0;
-      const macdHistogram = typeof data.macdHistogram === "number" ? data.macdHistogram : 0;
-
-      // Use the change percent from the edge function (already corrected)
-      let changePercent = data.changePercent || 0;
-      
-      // Additional safety check - if change percent seems wrong, recalculate
-      if (data.price && data.previousClose && data.previousClose > 0) {
-        const calculatedChange = ((data.price - data.previousClose) / data.previousClose) * 100;
-        
-        // If the API says positive but calculation says negative (or vice versa)
-        if ((data.changePercent > 0 && calculatedChange < 0) || 
-            (data.changePercent < 0 && calculatedChange > 0)) {
-          console.log(`⚠️ API shows ${data.changePercent}% but calculation shows ${calculatedChange}%`);
-          console.log("Using calculated value (API might be showing after-hours data)");
-          changePercent = calculatedChange;
-        }
-        
-        // If values are significantly different (more than 1%), use calculated
-        if (Math.abs(data.changePercent - calculatedChange) > 1) {
-          console.log(`⚠️ Large difference: API ${data.changePercent}% vs calculated ${calculatedChange}%`);
-          changePercent = calculatedChange;
-        }
-      }
-      
-      console.log(`Final change percent: ${changePercent}%`);
-
-      // Calculate AI probability based on RSI and MACD
-      const rsiBias = (rsi - 50) / 50;
-      const macdBias = Math.max(-1, Math.min(1, macdHistogram));
-      const directionScore = rsiBias * 0.6 + macdBias * 0.4;
-      const prob = Math.round(50 + directionScore * 30);
-      const buyPct = Math.max(20, Math.min(80, Math.round(50 + directionScore * 25)));
-      const sellPct = Math.max(10, Math.min(70, Math.round(50 - directionScore * 25)));
-      const holdPct = Math.max(0, 100 - buyPct - sellPct);
-
-      const reportData = {
-        ticker: data.symbol || pendingSymbol,
-        name: data.companyName || data.symbol || pendingSymbol,
-        price: data.price,
-        change: parseFloat(changePercent.toFixed(2)),
-        rsi,
-        macd,
-        macdSignal,
-        macdHistogram,
-        probability: prob,
-        highTarget: parseFloat((basePrice * 1.15).toFixed(2)),
-        lowTarget: parseFloat((basePrice * 0.88).toFixed(2)),
-        high52Week: data.high52Week || parseFloat((basePrice * 1.35).toFixed(2)),
-        low52Week: data.low52Week || parseFloat((basePrice * 0.65).toFixed(2)),
-        volume: data.volume || 0,
-        volumeDisplay: data.volumeDisplay || data.volume?.toString() || "0",
-        buyPercent: buyPct,
-        holdPercent: holdPct,
-        sellPercent: sellPct,
-        aiSummary: "",
-        currency: data.currency || "USD",
-        market: pendingMarket,
-        dayHigh: data.dayHigh || data.high || basePrice,
-        dayLow: data.dayLow || data.low || basePrice,
-        previousClose: data.previousClose || basePrice,
-        companyDescription: data.longBusinessSummary || null,
-        sector: data.sector || null,
-        industry: data.industry || null,
-        marketCap: data.marketCap || null,
-        dividendYield: data.dividendYield,
-        forwardDividendRate: data.forwardDividendRate || null,
-        forwardDividendYield: data.forwardDividendYield || null,
-        declaredDividendPerShare: data.declaredDividendPerShare || null,
-        exDividendDate: data.exDividendDate || null,
-        trailingPE: data.trailingPE,
-        marketState: data.marketState || "REGULAR",
-      };
-
+  // In handleAcceptDisclaimer, update the data handling:
+const handleAcceptDisclaimer = async () => {
+  setShowDisclaimer(false);
+  setIsLoading(true);
+  
+  try {
+    const creditSuccess = await consumeCredit();
+    if (!creditSuccess) {
+      setShowOutOfCreditsPopup(true);
       setIsLoading(false);
-      
-      // Create summary text for voice and display
-      const changeDisplay = changePercent > 0 ? `+${changePercent.toFixed(2)}%` : `${changePercent.toFixed(2)}%`;
-      const summaryText = `${data.companyName || data.symbol} 分析完成。價格: ${data.price} ${data.currency || 'USD'}，${changeDisplay}，RSI: ${rsi.toFixed(1)}，MACD: ${macd.toFixed(2)}，AI預測概率: ${prob}%。${buyPct}% 買入，${holdPct}% 持有，${sellPct}% 賣出。`;
-      setAnalysisResult(summaryText);
-      setIsAnalysisComplete(true);
-      
-      // Navigate to report page with data
-      navigate("/report", { state: { reportData } });
-    } catch (err) {
-      console.error("Error in handleAcceptDisclaimer:", err);
+      return;
+    }
+
+    console.log(`Fetching data for: ${pendingSymbol} (${pendingMarket})`);
+    
+    const { data, error } = await supabase.functions.invoke("fetch-stock-data", {
+      body: { symbol: pendingSymbol, market: pendingMarket },
+    });
+
+    if (error) {
+      console.error("Edge function error:", error);
       setErrorMessage(t.fetchError);
       setShowError(true);
       setIsLoading(false);
+      return;
     }
-  };
+
+    if (data?.error) {
+      console.error("Data error:", data.error);
+      setErrorMessage(data.error || t.fetchError);
+      setShowError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    console.log("Stock data received:", data);
+
+    if (!data || typeof data.price !== 'number') {
+      console.error("Invalid data structure:", data);
+      setErrorMessage("Invalid data received from API");
+      setShowError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    const basePrice = data.price;
+    
+    // Use the RSI and MACD from the edge function (now with real data)
+    const rsi = typeof data.rsi === "number" ? data.rsi : 50;
+    const macd = typeof data.macd === "number" ? data.macd : 0;
+    const macdSignal = typeof data.macdSignal === "number" ? data.macdSignal : 0;
+    const macdHistogram = typeof data.macdHistogram === "number" ? data.macdHistogram : 0;
+
+    console.log(`RSI: ${rsi}, MACD: ${macd}, Signal: ${macdSignal}, Histogram: ${macdHistogram}`);
+
+    // Use the change percent from the edge function
+    let changePercent = data.changePercent || 0;
+    
+    // Additional safety check
+    if (data.price && data.previousClose && data.previousClose > 0) {
+      const calculatedChange = ((data.price - data.previousClose) / data.previousClose) * 100;
+      
+      if ((data.changePercent > 0 && calculatedChange < 0) || 
+          (data.changePercent < 0 && calculatedChange > 0)) {
+        console.log(`⚠️ API shows ${data.changePercent}% but calculation shows ${calculatedChange}%`);
+        changePercent = calculatedChange;
+      }
+      
+      if (Math.abs(data.changePercent - calculatedChange) > 1) {
+        console.log(`⚠️ Large difference: API ${data.changePercent}% vs calculated ${calculatedChange}%`);
+        changePercent = calculatedChange;
+      }
+    }
+    
+    console.log(`Final change percent: ${changePercent}%`);
+
+    // Calculate AI probability based on RSI and MACD
+    const rsiBias = (rsi - 50) / 50;
+    const macdBias = Math.max(-1, Math.min(1, macdHistogram));
+    const directionScore = rsiBias * 0.6 + macdBias * 0.4;
+    const prob = Math.round(50 + directionScore * 30);
+    const buyPct = Math.max(20, Math.min(80, Math.round(50 + directionScore * 25)));
+    const sellPct = Math.max(10, Math.min(70, Math.round(50 - directionScore * 25)));
+    const holdPct = Math.max(0, 100 - buyPct - sellPct);
+
+    const reportData = {
+      ticker: data.symbol || pendingSymbol,
+      name: data.companyName || data.symbol || pendingSymbol,
+      price: data.price,
+      change: parseFloat(changePercent.toFixed(2)),
+      rsi: rsi,
+      macd: macd,
+      macdSignal: macdSignal,
+      macdHistogram: macdHistogram,
+      probability: prob,
+      highTarget: parseFloat((basePrice * 1.15).toFixed(2)),
+      lowTarget: parseFloat((basePrice * 0.88).toFixed(2)),
+      high52Week: data.high52Week || parseFloat((basePrice * 1.35).toFixed(2)),
+      low52Week: data.low52Week || parseFloat((basePrice * 0.65).toFixed(2)),
+      volume: data.volumeDisplay || data.volume?.toString() || "0",
+      buyPercent: buyPct,
+      holdPercent: holdPct,
+      sellPercent: sellPct,
+      aiSummary: "",
+      currency: data.currency || "USD",
+      market: pendingMarket,
+      dayHigh: data.dayHigh || data.high || basePrice,
+      dayLow: data.dayLow || data.low || basePrice,
+      previousClose: data.previousClose || basePrice,
+      companyDescription: data.longBusinessSummary || null,
+      sector: data.sector || null,
+      industry: data.industry || null,
+      marketCap: data.marketCap || null,
+      dividendYield: data.dividendYield,
+      forwardDividendRate: data.forwardDividendRate || null,
+      forwardDividendYield: data.forwardDividendYield || null,
+      declaredDividendPerShare: data.declaredDividendPerShare || null,
+      exDividendDate: data.exDividendDate || null,
+      trailingPE: data.trailingPE,
+      marketState: data.marketState || "REGULAR",
+    };
+
+    setIsLoading(false);
+    
+    const changeDisplay = changePercent > 0 ? `+${changePercent.toFixed(2)}%` : `${changePercent.toFixed(2)}%`;
+    const summaryText = `${data.companyName || data.symbol} 分析完成。價格: ${data.price} ${data.currency || 'USD'}，${changeDisplay}，RSI: ${rsi.toFixed(1)}，MACD: ${macd.toFixed(2)}，AI預測概率: ${prob}%。${buyPct}% 買入，${holdPct}% 持有，${sellPct}% 賣出。`;
+    setAnalysisResult(summaryText);
+    setIsAnalysisComplete(true);
+    
+    navigate("/report", { state: { reportData } });
+  } catch (err) {
+    console.error("Error in handleAcceptDisclaimer:", err);
+    setErrorMessage(t.fetchError);
+    setShowError(true);
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="h-screen flex flex-col overflow-hidden max-w-[100vw] overflow-x-hidden pb-16 md:pb-0 bg-background">

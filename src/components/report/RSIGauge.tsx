@@ -4,26 +4,27 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface RSIGaugeProps {
   value: number;
   loading?: boolean;
+  period?: number; // Add period prop
 }
 
-export function RSIGauge({ value, loading }: RSIGaugeProps) {
+export function RSIGauge({ value, loading, period = 14 }: RSIGaugeProps) {
   const { language } = useLanguage();
 
   const content = {
     en: {
-      title: "RSI Indicator",
+      title: `RSI (${period})`,
       oversold: "Oversold",
       neutral: "Neutral",
       overbought: "Overbought",
     },
     tc: {
-      title: "RSI 指標",
+      title: `RSI (${period})`,
       oversold: "超賣",
       neutral: "中性",
       overbought: "超買",
     },
     sc: {
-      title: "RSI 指标",
+      title: `RSI (${period})`,
       oversold: "超卖",
       neutral: "中性",
       overbought: "超买",
