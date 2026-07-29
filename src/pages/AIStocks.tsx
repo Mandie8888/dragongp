@@ -153,6 +153,19 @@ export default function AIStocks() {
       setIsSpeaking(false);
       return;
     }
+    // Auto-play welcome voice when page loads
+useEffect(() => {
+  // Small delay to ensure everything is rendered
+  const timer = setTimeout(() => {
+    speakWelcome();
+  }, 1000);
+  
+  return () => {
+    clearTimeout(timer);
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+}, []);
 
     const lang = language === 'zh-TW' ? 'zh' : language === 'zh-CN' ? 'zh' : 'en';
     const isChinese = lang === 'zh';

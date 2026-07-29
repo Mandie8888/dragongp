@@ -302,6 +302,20 @@ export default function Mark6Game() {
       }
     }
   };
+  // Auto-play welcome voice when page loads
+useEffect(() => {
+  // Small delay to ensure everything is rendered
+  const timer = setTimeout(() => {
+    handleVoiceWelcome();
+  }, 1500);
+  
+  return () => {
+    clearTimeout(timer);
+    if (isSpeaking) {
+      stop();
+    }
+  };
+}, []);
 
   // Generate mock predictions for voice demo
   const generateMockPredictions = (): number[][] => {
