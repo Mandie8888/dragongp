@@ -261,6 +261,19 @@ export default function Mark6Results() {
   const { speak, speakFullReport, getPartnerMethod, getPartnerName, isSpeaking, stop, isSupported } = useMark6Speech({ 
     lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
   });
+  // ✅ ADD THIS: Auto-play voice when report loads
+  useEffect(() => {
+    if (isProcessing || !isSupported) return;
+    
+    // Small delay to ensure everything is rendered
+    const timer = setTimeout(() => {
+      const partnerName = getPartnerName(partnerId, language);
+      const method = getPartnerMethod(partnerId, language);
+      speakFullReport(partnerId, partnerName, method, gameType, predictions);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [isProcessing, isSupported]);
 
   const statusMessages = [
     { en: "Analyzing historical patterns...", "zh-TW": "正在分析歷史規律...", "zh-CN": "正在分析历史规律..." },

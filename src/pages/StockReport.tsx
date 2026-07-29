@@ -524,6 +524,21 @@ export default function StockReport() {
     lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US',
   });
 
+  // ✅ ADD THIS: Auto-play voice when report loads
+  useEffect(() => {
+    if (!reportData || !isSupported) return;
+    
+    // Small delay to ensure everything is rendered
+    const timer = setTimeout(() => {
+      const text = getReportText();
+      if (text) {
+        speak(text);
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [reportData, isSupported]);
+
   // Check watchlist status when reportData loads
   useEffect(() => {
     if (reportData) {
