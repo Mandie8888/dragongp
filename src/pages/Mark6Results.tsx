@@ -458,6 +458,9 @@ export default function Mark6Results() {
     const isChinese = language === 'zh-TW' || language === 'zh-CN';
     
     const topPrediction = predictions[0]?.join(' · ') || '';
+    const fullPredictions = predictions.map((set, idx) => {
+      return `${isChinese ? `第${idx + 1}組` : `Set ${idx + 1}`}: ${set.join(' · ')}`;
+    }).join('\n');
     
     const parts = [];
     parts.push(isChinese 
@@ -467,25 +470,90 @@ export default function Mark6Results() {
     parts.push('');
     parts.push(`⭐ ${topPrediction}`);
     parts.push('');
-    parts.push(isChinese ? '📊 查看完整報告：' : '📊 View full report:');
-    parts.push('🔗 https://dragongp.ai/mark6-results');
+    parts.push(isChinese ? '📊 完整預測 (10組)：' : '📊 Full Predictions (10 sets):');
+    parts.push(fullPredictions);
+    parts.push('');
+    parts.push(isChinese ? '🔬 方法論：' : '🔬 Methodology:');
+    parts.push(partnerMath.mathModule[language]);
+    parts.push('');
+    parts.push(isChinese ? '📅 報告日期：' : '📅 Report Date:');
+    parts.push(new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }));
+    parts.push('');
+    parts.push(isChinese ? '🔗 查看完整報告：' : '🔗 View full report:');
+    parts.push('https://dragongp.ai/mark6-results');
     parts.push('');
     parts.push('⚡ Powered by DragonGP.AI');
     
     return parts.join('\n');
   };
 
-  // Handle Facebook Share
+  // Handle Facebook Share - Using Web Share API or clipboard fallback
   const handleFacebookShare = () => {
     const shareText = getShareText();
-    const encodedText = encodeURIComponent(shareText);
-    const url = `https://www.facebook.com/dialog/feed?display=popup&quote=${encodedText}&hashtag=%23DragonGPAI%23LuckyNumbers&app_id=your_facebook_app_id`;
+    const isChinese = language === 'zh-TW' || language === 'zh-CN';
+    const partnerName = partner.name[language] || partner.name.en || 'AI';
     
-    window.open(
-      url,
-      'facebook-share-dialog',
-      'width=626,height=436,toolbar=0,menubar=0,scrollbars=yes'
-    );
+    // Format the full share text
+    const fullText = isChinese
+      ? `🎰 ${partnerName} AI 彩票預測報告\n\n${shareText}\n\n🔗 ${window.location.href}\n\n⚡ 由 DragonGP.AI 提供 AI 預測`
+      : `🎰 ${partnerName} AI Lottery Prediction Report\n\n${shareText}\n\n🔗 ${window.location.href}\n\n⚡ Powered by DragonGP.AI`;
+    
+    // Step 1: Try Web Share API (for mobile)
+    if (navigator.share) {
+      navigator.share({
+        title: `${partnerName} - AI Lottery Prediction`,
+        text: fullText,
+        url: window.location.href,
+      }).then(() => {
+        toast.success('Shared successfully!');
+      }).catch((error) => {
+        if (error.name !== 'AbortError') {
+          console.error('Share error:', error);
+          // Fallback: copy and open Facebook
+          copyAndShareOnFacebook(fullText);
+        }
+      });
+      return;
+    }
+    
+    // Step 2: Desktop - Copy to clipboard and open Facebook
+    copyAndShareOnFacebook(fullText);
+  };
+
+  // Helper function for copying and opening Facebook
+  const copyAndShareOnFacebook = (text: string) => {
+    // Copy to clipboard first
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success('✅ Report copied to clipboard!');
+      
+      // Open Facebook share dialog
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+      const width = 626;
+      const height = 436;
+      const left = (window.innerWidth - width) / 2;
+      const top = (window.innerHeight - height) / 2;
+      
+      const popup = window.open(
+        facebookUrl,
+        'facebook-share-dialog',
+        `width=${width},height=${height},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=yes`
+      );
+      
+      if (!popup) {
+        window.open(facebookUrl, '_blank');
+      }
+      
+      // Show a toast with instructions
+      toast.info('📋 Paste the copied text into your Facebook post (Ctrl+V / Cmd+V)');
+    }).catch(() => {
+      // If clipboard fails, just open Facebook
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+      toast.info('Please copy the report from the page and paste it into Facebook.');
+    });
   };
 
   // Handle WhatsApp Share
@@ -499,12 +567,23 @@ export default function Mark6Results() {
   // Handle Copy Text
   const handleCopyText = () => {
     const text = getShareText();
-    navigator.clipboard.writeText(text).then(() => {
+    const fullText = `${text}\n\n🔗 ${window.location.href}\n\n⚡ Powered by DragonGP.AI`;
+    
+    navigator.clipboard.writeText(fullText).then(() => {
       setIsCopied(true);
-      toast.success(t.copied || 'Copied!');
+      toast.success('✅ Report copied to clipboard!');
       setTimeout(() => setIsCopied(false), 3000);
     }).catch(() => {
-      toast.error('Failed to copy');
+      // Fallback: copy using a textarea
+      const textarea = document.createElement('textarea');
+      textarea.value = fullText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setIsCopied(true);
+      toast.success('✅ Report copied to clipboard!');
+      setTimeout(() => setIsCopied(false), 3000);
     });
   };
 
@@ -685,7 +764,6 @@ export default function Mark6Results() {
                   })}
                 </span>
               </div>
-              {/* Removed Facebook button from here */}
             </div>
 
             <div className="flex items-center gap-4 mb-5 print:gap-3 print:mb-3">
