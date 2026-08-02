@@ -54,9 +54,7 @@ const generateMark6Set = (gameType: "hk" | "tw", bankers?: number[]): number[] =
   const numbers: number[] = bankers ? [...bankers] : [];
   while (numbers.length < 6) {
     const num = Math.floor(Math.random() * range) + 1;
-    if (!numbers.includes(num)) {
-      numbers.push(num);
-    }
+    if (!numbers.includes(num)) numbers.push(num);
   }
   return numbers.sort((a, b) => a - b);
 };
@@ -93,9 +91,7 @@ const parseColorRatio = (ratioId?: string): [number, number, number] => {
     case "3-2-1": return [3, 2, 1];
     case "1-3-2": return [1, 3, 2];
     case "custom": 
-      const options: [number, number, number][] = [
-        [2, 2, 2], [3, 2, 1], [1, 3, 2], [2, 3, 1], [3, 1, 2], [1, 2, 3], [4, 1, 1], [1, 4, 1], [1, 1, 4]
-      ];
+      const options: [number, number, number][] = [[2, 2, 2], [3, 2, 1], [1, 3, 2], [2, 3, 1], [3, 1, 2], [1, 2, 3], [4, 1, 1], [1, 4, 1], [1, 1, 4]];
       return options[Math.floor(Math.random() * options.length)];
     default: return [2, 2, 2];
   }
@@ -109,114 +105,34 @@ const generatePredictions = (gameType: "hk" | "tw", bankers?: number[], colorRat
   return Array.from({ length: 10 }, () => generateMark6Set(gameType, bankers));
 };
 
-const partnerThemes: Record<string, {
-  primary: string;
-  secondary: string;
-  glow: string;
-  gradient: string;
-  bgGradient: string;
-}> = {
-  elon: {
-    primary: "#00FF41",
-    secondary: "#39FF14",
-    glow: "rgba(0, 255, 65, 0.5)",
-    gradient: "linear-gradient(135deg, #00FF41 0%, #39FF14 100%)",
-    bgGradient: "linear-gradient(135deg, #0a1628 0%, #0d2818 50%, #0a1628 100%)",
-  },
-  "god-of-gambling": {
-    primary: "#FFD700",
-    secondary: "#FFA500",
-    glow: "rgba(255, 215, 0, 0.5)",
-    gradient: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
-    bgGradient: "linear-gradient(135deg, #1a1a0a 0%, #2d2a0a 50%, #1a1a0a 100%)",
-  },
-  "lucky-star": {
-    primary: "#FFD700",
-    secondary: "#FFA500",
-    glow: "rgba(255, 215, 0, 0.5)",
-    gradient: "linear-gradient(135deg, #CC0000 0%, #990000 100%)",
-    bgGradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)",
-  },
-  achelois: {
-    primary: "#C9B037",
-    secondary: "#94A3B8",
-    glow: "rgba(201, 176, 55, 0.5)",
-    gradient: "linear-gradient(135deg, #C0392B 0%, #A93226 100%)",
-    bgGradient: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
-  },
-  aladdin: {
-    primary: "#A855F7",
-    secondary: "#9333EA",
-    glow: "rgba(168, 85, 247, 0.5)",
-    gradient: "linear-gradient(135deg, #A855F7 0%, #9333EA 100%)",
-    bgGradient: "linear-gradient(135deg, #1a0a20 0%, #2d0a35 50%, #1a0a20 100%)",
-  },
+const partnerThemes: Record<string, { primary: string; secondary: string; glow: string; gradient: string; bgGradient: string; }> = {
+  elon: { primary: "#00FF41", secondary: "#39FF14", glow: "rgba(0, 255, 65, 0.5)", gradient: "linear-gradient(135deg, #00FF41 0%, #39FF14 100%)", bgGradient: "linear-gradient(135deg, #0a1628 0%, #0d2818 50%, #0a1628 100%)" },
+  "god-of-gambling": { primary: "#FFD700", secondary: "#FFA500", glow: "rgba(255, 215, 0, 0.5)", gradient: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)", bgGradient: "linear-gradient(135deg, #1a1a0a 0%, #2d2a0a 50%, #1a1a0a 100%)" },
+  "lucky-star": { primary: "#FFD700", secondary: "#FFA500", glow: "rgba(255, 215, 0, 0.5)", gradient: "linear-gradient(135deg, #CC0000 0%, #990000 100%)", bgGradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)" },
+  achelois: { primary: "#C9B037", secondary: "#94A3B8", glow: "rgba(201, 176, 55, 0.5)", gradient: "linear-gradient(135deg, #C0392B 0%, #A93226 100%)", bgGradient: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" },
+  aladdin: { primary: "#A855F7", secondary: "#9333EA", glow: "rgba(168, 85, 247, 0.5)", gradient: "linear-gradient(135deg, #A855F7 0%, #9333EA 100%)", bgGradient: "linear-gradient(135deg, #1a0a20 0%, #2d0a35 50%, #1a0a20 100%)" },
 };
 
-// Define partner content
-const partnerContent: Record<string, {
-  mathModule: { en: string; "zh-TW": string; "zh-CN": string };
-  explanation: { en: string; "zh-TW": string; "zh-CN": string };
-}> = {
+const partnerContent: Record<string, { mathModule: { en: string; "zh-TW": string; "zh-CN": string }; explanation: { en: string; "zh-TW": string; "zh-CN": string } }> = {
   elon: {
-    mathModule: {
-      en: "Banker & Leg (Strategic Game Theory)",
-      "zh-TW": "膽拖策略 (博弈論)",
-      "zh-CN": "胆拖策略 (博弈论)",
-    },
-    explanation: {
-      en: "This model uses your selected Bankers as fixed anchors and calculates the optimal \"Legs\" based on historical air turbulence and game theory patterns.",
-      "zh-TW": "此模型使用您選擇的膽碼作為固定錨點，並根據歷史空氣湍流和博弈論模式計算最佳「拖碼」。",
-      "zh-CN": "此模型使用您选择的胆码作为固定锚点，并根据历史空气湍流和博弈论模式计算最佳「拖码」。",
-    },
+    mathModule: { en: "Banker & Leg (Strategic Game Theory)", "zh-TW": "膽拖策略 (博弈論)", "zh-CN": "胆拖策略 (博弈论)" },
+    explanation: { en: "This model uses your selected Bankers as fixed anchors and calculates the optimal \"Legs\" based on historical air turbulence and game theory patterns.", "zh-TW": "此模型使用您選擇的膽碼作為固定錨點，並根據歷史空氣湍流和博弈論模式計算最佳「拖碼」。", "zh-CN": "此模型使用您选择的胆码作为固定锚点，并根据历史空气湍流和博弈论模式计算最佳「拖码」。", },
   },
   "god-of-gambling": {
-    mathModule: {
-      en: "Methodology: Chaos Theory Logic",
-      "zh-TW": "方法論：混沌理論",
-      "zh-CN": "方法论：混沌理论",
-    },
-    explanation: {
-      en: "This model tracks non-linear patterns in random turbulence to find the \"Hidden Order\" in historical draw data using advanced chaos theory algorithms.",
-      "zh-TW": "此模型追蹤隨機湍流中的非線性模式，使用先進的混沌理論演算法在歷史開獎數據中尋找「隱藏秩序」。",
-      "zh-CN": "此模型追踪随机湍流中的非线性模式，使用先进的混沌理论算法在历史开奖数据中寻找「隐藏秩序」。",
-    },
+    mathModule: { en: "Methodology: Chaos Theory Logic", "zh-TW": "方法論：混沌理論", "zh-CN": "方法论：混沌理论" },
+    explanation: { en: "This model tracks non-linear patterns in random turbulence to find the \"Hidden Order\" in historical draw data using advanced chaos theory algorithms.", "zh-TW": "此模型追蹤隨機湍流中的非線性模式，使用先進的混沌理論演算法在歷史開獎數據中尋找「隱藏秩序」。", "zh-CN": "此模型追踪随机湍流中的非线性模式，使用先进的混沌理论算法在历史开奖数据中寻找「隐藏秩序」。", },
   },
   "lucky-star": {
-    mathModule: {
-      en: "Methodology: Monte Carlo Simulation Engine",
-      "zh-TW": "方法論：蒙特卡羅模擬引擎",
-      "zh-CN": "方法论：蒙特卡罗模拟引擎",
-    },
-    explanation: {
-      en: "By running massive random iterations, this model identifies number clusters that statistically survive 1,000,000 virtual draws.",
-      "zh-TW": "透過運行大量隨機迭代，此模型識別出在 1,000,000 次虛擬抽獎中統計上存活的號碼群組。",
-      "zh-CN": "通过运行大量随机迭代，此模型识别出在 1,000,000 次虚拟抽奖中统计上存活的号码群组。",
-    },
+    mathModule: { en: "Methodology: Monte Carlo Simulation Engine", "zh-TW": "方法論：蒙特卡羅模擬引擎", "zh-CN": "方法论：蒙特卡罗模拟引擎" },
+    explanation: { en: "By running massive random iterations, this model identifies number clusters that statistically survive 1,000,000 virtual draws.", "zh-TW": "透過運行大量隨機迭代，此模型識別出在 1,000,000 次虛擬抽獎中統計上存活的號碼群組。", "zh-CN": "通过运行大量随机迭代，此模型识别出在 1,000,000 次虚拟抽奖中统计上存活的号码群组。", },
   },
   achelois: {
-    mathModule: {
-      en: "Methodology: Neural Network Entropy",
-      "zh-TW": "方法論：神經網絡熵值分析",
-      "zh-CN": "方法论：神经网络熵值分析",
-    },
-    explanation: {
-      en: "This model uses deep neural networks to identify stable numerical structures within the chaotic entropy of historical draw data.",
-      "zh-TW": "此模型使用深度神經網絡在歷史開獎數據的混沌熵值中識別穩定的數字結構。",
-      "zh-CN": "此模型使用深度神经网络在历史开奖数据的混沌熵值中识别稳定的数字结构。",
-    },
+    mathModule: { en: "Methodology: Neural Network Entropy", "zh-TW": "方法論：神經網絡熵值分析", "zh-CN": "方法论：神经网络熵值分析" },
+    explanation: { en: "This model uses deep neural networks to identify stable numerical structures within the chaotic entropy of historical draw data.", "zh-TW": "此模型使用深度神經網絡在歷史開獎數據的混沌熵值中識別穩定的數字結構。", "zh-CN": "此模型使用深度神经网络在历史开奖数据的混沌熵值中识别稳定的数字结构。", },
   },
   aladdin: {
-    mathModule: {
-      en: "Quantum Spooky Sync (Color Spectrum)",
-      "zh-TW": "量子幽靈同步（色譜分佈）",
-      "zh-CN": "量子幽灵同步（色谱分布）",
-    },
-    explanation: {
-      en: "Uses color spectrum distribution to track the vibrant patterns of Red, Blue, and Green number zones.",
-      "zh-TW": "使用色譜分佈來追蹤紅、藍、綠號碼區域的鮮明模式。",
-      "zh-CN": "使用色谱分布来追踪红、蓝、绿号码区域的鲜明模式。",
-    },
+    mathModule: { en: "Quantum Spooky Sync (Color Spectrum)", "zh-TW": "量子幽靈同步（色譜分佈）", "zh-CN": "量子幽灵同步（色谱分布）" },
+    explanation: { en: "Uses color spectrum distribution to track the vibrant patterns of Red, Blue, and Green number zones.", "zh-TW": "使用色譜分佈來追蹤紅、藍、綠號碼區域的鮮明模式。", "zh-CN": "使用色谱分布来追踪红、蓝、绿号码区域的鲜明模式。", },
   },
 };
 
@@ -257,21 +173,15 @@ export default function Mark6Results() {
   const partner = characters.find((c) => c.id === partnerId) || characters[0];
   const theme = partnerThemes[partnerId] || partnerThemes.elon;
 
-  // Voice controls
-  const { speak, speakFullReport, getPartnerMethod, getPartnerName, isSpeaking, stop, isSupported } = useMark6Speech({ 
-    lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
-  });
-  // ✅ ADD THIS: Auto-play voice when report loads
+  const { speak, speakFullReport, getPartnerMethod, getPartnerName, isSpeaking, stop, isSupported } = useMark6Speech({ lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' });
+  
   useEffect(() => {
     if (isProcessing || !isSupported) return;
-    
-    // Small delay to ensure everything is rendered
     const timer = setTimeout(() => {
       const partnerName = getPartnerName(partnerId, language);
       const method = getPartnerMethod(partnerId, language);
       speakFullReport(partnerId, partnerName, method, gameType, predictions);
     }, 1500);
-    
     return () => clearTimeout(timer);
   }, [isProcessing, isSupported]);
 
@@ -292,8 +202,8 @@ export default function Mark6Results() {
       methodology: "Methodology",
       basisNote: "Based on the last 100 draw results",
       setLabel: "Set",
-      printReport: "Print Report",
-      returnToGame: "Return to Game",
+      printReport: "Print",
+      returnToGame: "Return",
       disclaimer: "Gambling is harmful to health. This is purely an AI mathematical exercise. Please do not take it seriously or become addicted. We are not responsible for any consequences.",
       yourBankers: "Your Selected Bankers",
       yourColorRatio: "Color Magic Mix",
@@ -318,10 +228,10 @@ export default function Mark6Results() {
       gameLabel: "Game",
       listenReport: "Listen to Report",
       stopVoice: "Stop Voice",
-      copyText: "Copy Report",
+      copyText: "Copy",
       copied: "Copied!",
-      shareFacebook: "Share on Facebook",
-      shareWhatsAppLabel: "Share on WhatsApp",
+      shareFacebook: "Share",
+      shareWhatsAppLabel: "Share",
       shareTwitter: "Share on Twitter",
     },
     "zh-TW": {
@@ -331,8 +241,8 @@ export default function Mark6Results() {
       methodology: "方法論",
       basisNote: "根據最近 100 期開獎結果",
       setLabel: "組",
-      printReport: "列印報告",
-      returnToGame: "返回遊戲",
+      printReport: "列印",
+      returnToGame: "返回",
       disclaimer: "賭博有害身心健康。這純粹是 AI 數學演練，請勿過度認真或沉迷。本站對任何結果不負法律責任。",
       yourBankers: "您選擇的膽碼",
       yourColorRatio: "色球魔法組合",
@@ -357,10 +267,10 @@ export default function Mark6Results() {
       gameLabel: "遊戲",
       listenReport: "收聽報告",
       stopVoice: "停止語音",
-      copyText: "複製報告",
+      copyText: "複製",
       copied: "已複製！",
-      shareFacebook: "分享到 Facebook",
-      shareWhatsAppLabel: "分享到 WhatsApp",
+      shareFacebook: "分享",
+      shareWhatsAppLabel: "分享",
       shareTwitter: "分享到 Twitter",
     },
     "zh-CN": {
@@ -370,8 +280,8 @@ export default function Mark6Results() {
       methodology: "方法论",
       basisNote: "根据最近 100 期开奖结果",
       setLabel: "组",
-      printReport: "打印报告",
-      returnToGame: "返回游戏",
+      printReport: "打印",
+      returnToGame: "返回",
       disclaimer: "赌博有害身心健康。这纯粹是 AI 数学演练，请勿过度认真或沉迷。本站对任何结果不负法律责任。",
       yourBankers: "您选择的胆码",
       yourColorRatio: "色球魔法组合",
@@ -396,10 +306,10 @@ export default function Mark6Results() {
       gameLabel: "游戏",
       listenReport: "收听报告",
       stopVoice: "停止语音",
-      copyText: "复制报告",
+      copyText: "复制",
       copied: "已复制！",
-      shareFacebook: "分享到 Facebook",
-      shareWhatsAppLabel: "分享到 WhatsApp",
+      shareFacebook: "分享",
+      shareWhatsAppLabel: "分享",
       shareTwitter: "分享到 Twitter",
     },
   };
@@ -407,79 +317,39 @@ export default function Mark6Results() {
   const t = content[language] || content.en;
   const partnerMath = partnerContent[partnerId] || partnerContent.elon;
 
-  // Get the share text for the report
   const getShareText = () => {
     const partnerName = partner.name[language] || partner.name.en || 'AI';
-    const dateStr = new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    
+    const dateStr = new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
     const isChinese = language === 'zh-TW' || language === 'zh-CN';
-    
-    // Build the prediction list
-    const predictionsStr = predictions.map((set, idx) => {
-      return `${isChinese ? `第${idx + 1}組` : `Set ${idx + 1}`}: ${set.join(' · ')}`;
-    }).join('\n');
-    
-    // Get the top prediction (first set)
+    const predictionsStr = predictions.map((set, idx) => `${isChinese ? `第${idx + 1}組` : `Set ${idx + 1}`}: ${set.join(' · ')}`).join('\n');
     const topPrediction = predictions[0]?.join(' · ') || '';
-    
-    // Build the full share text
     const parts = [];
-    
-    // 1. Character name and prediction intro
-    parts.push(isChinese 
-      ? `🎰 ${partnerName} 預測下一期幸運號碼：`
-      : `🎰 ${partnerName} is predicting the lucky numbers for the next draw:`
-    );
+    parts.push(isChinese ? `🎰 ${partnerName} 預測下一期幸運號碼：` : `🎰 ${partnerName} is predicting the lucky numbers for the next draw:`);
     parts.push('');
-    
-    // 2. Date
     parts.push(`${isChinese ? '📅 報告日期' : '📅 Report Date'}: ${dateStr}`);
     parts.push('');
-    
-    // 3. Top prediction (highlighted)
     parts.push(isChinese ? '⭐ 精選號碼組合：' : '⭐ Top Prediction:');
     parts.push(`[ ${topPrediction} ]`);
     parts.push('');
-    
-    // 4. All predictions
     parts.push(isChinese ? '📊 完整預測 (10組)：' : '📊 Full Predictions (10 sets):');
     parts.push(predictionsStr);
     parts.push('');
-    
-    // 5. Methodology
     parts.push(`${isChinese ? '🔬 方法論' : '🔬 Methodology'}: ${partnerMath.mathModule[language]}`);
     parts.push('');
-    
-    // 6. Game type
     parts.push(`${isChinese ? '🎯 遊戲' : '🎯 Game'}: ${activeData.label[language]}`);
     parts.push('');
-    
-    // 7. Powered by
     parts.push(isChinese ? '⚡ 由 DragonGP.AI 提供 AI 預測' : '⚡ Powered by DragonGP.AI');
     parts.push('🔗 https://dragongp.ai');
-    
     return parts.join('\n');
   };
 
-  // Get the share text for WhatsApp (with emojis)
   const getWhatsAppShareText = () => {
     const partnerName = partner.name[language] || partner.name.en || 'AI';
     const isChinese = language === 'zh-TW' || language === 'zh-CN';
-    
     const topPrediction = predictions[0]?.join(' · ') || '';
-    const fullPredictions = predictions.map((set, idx) => {
-      return `${isChinese ? `第${idx + 1}組` : `Set ${idx + 1}`}: ${set.join(' · ')}`;
-    }).join('\n');
-    
+    const fullPredictions = predictions.map((set, idx) => `${isChinese ? `第${idx + 1}組` : `Set ${idx + 1}`}: ${set.join(' · ')}`).join('\n');
     const parts = [];
-    parts.push(isChinese 
-      ? `🎰 ${partnerName} 預測下一期幸運號碼：`
-      : `🎰 ${partnerName} is predicting the lucky numbers for the next draw:`
-    );
+    parts.push(isChinese ? `🎰 ${partnerName} 預測下一期幸運號碼：` : `🎰 ${partnerName} is predicting the lucky numbers for the next draw:`);
     parts.push('');
     parts.push(`⭐ ${topPrediction}`);
     parts.push('');
@@ -490,86 +360,41 @@ export default function Mark6Results() {
     parts.push(partnerMath.mathModule[language]);
     parts.push('');
     parts.push(isChinese ? '📅 報告日期：' : '📅 Report Date:');
-    parts.push(new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }));
+    parts.push(new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }));
     parts.push('');
     parts.push(isChinese ? '🔗 查看完整報告：' : '🔗 View full report:');
     parts.push('https://dragongp.ai/mark6-results');
     parts.push('');
     parts.push('⚡ Powered by DragonGP.AI');
-    
     return parts.join('\n');
   };
 
-  // Handle Facebook Share - Using Web Share API or clipboard fallback
   const handleFacebookShare = () => {
     const shareText = getShareText();
     const isChinese = language === 'zh-TW' || language === 'zh-CN';
     const partnerName = partner.name[language] || partner.name.en || 'AI';
-    
-    // Format the full share text
-    const fullText = isChinese
-      ? `🎰 ${partnerName} AI 彩票預測報告\n\n${shareText}\n\n🔗 ${window.location.href}\n\n⚡ 由 DragonGP.AI 提供 AI 預測`
-      : `🎰 ${partnerName} AI Lottery Prediction Report\n\n${shareText}\n\n🔗 ${window.location.href}\n\n⚡ Powered by DragonGP.AI`;
-    
-    // Step 1: Try Web Share API (for mobile)
+    const fullText = isChinese ? `🎰 ${partnerName} AI 彩票預測報告\n\n${shareText}\n\n🔗 ${window.location.href}\n\n⚡ 由 DragonGP.AI 提供 AI 預測` : `🎰 ${partnerName} AI Lottery Prediction Report\n\n${shareText}\n\n🔗 ${window.location.href}\n\n⚡ Powered by DragonGP.AI`;
     if (navigator.share) {
-      navigator.share({
-        title: `${partnerName} - AI Lottery Prediction`,
-        text: fullText,
-        url: window.location.href,
-      }).then(() => {
-        toast.success('Shared successfully!');
-      }).catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.error('Share error:', error);
-          // Fallback: copy and open Facebook
-          copyAndShareOnFacebook(fullText);
-        }
-      });
+      navigator.share({ title: `${partnerName} - AI Lottery Prediction`, text: fullText, url: window.location.href, }).then(() => { toast.success('Shared successfully!'); }).catch((error) => { if (error.name !== 'AbortError') { console.error('Share error:', error); copyAndShareOnFacebook(fullText); } });
       return;
     }
-    
-    // Step 2: Desktop - Copy to clipboard and open Facebook
     copyAndShareOnFacebook(fullText);
   };
 
-  // Helper function for copying and opening Facebook
   const copyAndShareOnFacebook = (text: string) => {
-    // Copy to clipboard first
     navigator.clipboard.writeText(text).then(() => {
       toast.success('✅ Report copied to clipboard!');
-      
-      // Open Facebook share dialog
       const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
-      const width = 626;
-      const height = 436;
-      const left = (window.innerWidth - width) / 2;
-      const top = (window.innerHeight - height) / 2;
-      
-      const popup = window.open(
-        facebookUrl,
-        'facebook-share-dialog',
-        `width=${width},height=${height},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=yes`
-      );
-      
-      if (!popup) {
-        window.open(facebookUrl, '_blank');
-      }
-      
-      // Show a toast with instructions
+      const width = 626; const height = 436; const left = (window.innerWidth - width) / 2; const top = (window.innerHeight - height) / 2;
+      const popup = window.open(facebookUrl, 'facebook-share-dialog', `width=${width},height=${height},left=${left},top=${top},toolbar=0,menubar=0,scrollbars=yes`);
+      if (!popup) { window.open(facebookUrl, '_blank'); }
       toast.info('📋 Paste the copied text into your Facebook post (Ctrl+V / Cmd+V)');
     }).catch(() => {
-      // If clipboard fails, just open Facebook
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
       toast.info('Please copy the report from the page and paste it into Facebook.');
     });
   };
 
-  // Handle WhatsApp Share
   const handleWhatsAppShare = () => {
     const shareText = getWhatsAppShareText();
     const encodedText = encodeURIComponent(shareText);
@@ -577,17 +402,14 @@ export default function Mark6Results() {
     window.open(url, '_blank');
   };
 
-  // Handle Copy Text
   const handleCopyText = () => {
     const text = getShareText();
     const fullText = `${text}\n\n🔗 ${window.location.href}\n\n⚡ Powered by DragonGP.AI`;
-    
     navigator.clipboard.writeText(fullText).then(() => {
       setIsCopied(true);
       toast.success('✅ Report copied to clipboard!');
       setTimeout(() => setIsCopied(false), 3000);
     }).catch(() => {
-      // Fallback: copy using a textarea
       const textarea = document.createElement('textarea');
       textarea.value = fullText;
       document.body.appendChild(textarea);
@@ -602,54 +424,20 @@ export default function Mark6Results() {
 
   useEffect(() => {
     if (!isProcessing) return;
-
-    const numberInterval = setInterval(() => {
-      setProcessingNumbers(generateMark6Set(gameType));
-    }, 150);
-
-    const progressInterval = setInterval(() => {
-      setProcessingProgress((prev) => Math.min(prev + (100 / 180), 100));
-    }, 100);
-
-    const statusInterval = setInterval(() => {
-      setStatusIndex((prev) => (prev + 1) % statusMessages.length);
-    }, 3000);
-
-    const countdownInterval = setInterval(() => {
-      setCountdown((prev) => Math.max(prev - 1, 0));
-    }, 1000);
-
-    const completeTimer = setTimeout(() => {
-      setIsProcessing(false);
-    }, 18000);
-
-    return () => {
-      clearInterval(numberInterval);
-      clearInterval(progressInterval);
-      clearInterval(statusInterval);
-      clearInterval(countdownInterval);
-      clearTimeout(completeTimer);
-    };
+    const numberInterval = setInterval(() => { setProcessingNumbers(generateMark6Set(gameType)); }, 150);
+    const progressInterval = setInterval(() => { setProcessingProgress((prev) => Math.min(prev + (100 / 180), 100)); }, 100);
+    const statusInterval = setInterval(() => { setStatusIndex((prev) => (prev + 1) % statusMessages.length); }, 3000);
+    const countdownInterval = setInterval(() => { setCountdown((prev) => Math.max(prev - 1, 0)); }, 1000);
+    const completeTimer = setTimeout(() => { setIsProcessing(false); }, 18000);
+    return () => { clearInterval(numberInterval); clearInterval(progressInterval); clearInterval(statusInterval); clearInterval(countdownInterval); clearTimeout(completeTimer); };
   }, [isProcessing, gameType]);
 
-  const handleFastPass = () => {
-    setIsQuickMode(true);
-    setIsProcessing(false);
-  };
+  const handleFastPass = () => { setIsQuickMode(true); setIsProcessing(false); };
+  const handlePrint = () => { window.print(); };
+  const handleReturn = () => { navigate("/generate-report"); };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleReturn = () => {
-    navigate("/generate-report");
-  };
-
-  // Handle voice play
   const handleVoicePlay = () => {
-    if (isSpeaking) {
-      stop();
-    } else {
+    if (isSpeaking) { stop(); } else {
       const partnerName = getPartnerName(partnerId, language);
       const method = getPartnerMethod(partnerId, language);
       speakFullReport(partnerId, partnerName, method, gameType, predictions);
@@ -657,51 +445,27 @@ export default function Mark6Results() {
   };
 
   const getBallColor = (num: number, isBanker: boolean = false): string => {
-    if (isBanker) {
-      return "radial-gradient(circle at 30% 30%, #FFD700, #B8860B 60%, #8B6914 100%)";
-    }
+    if (isBanker) return "radial-gradient(circle at 30% 30%, #FFD700, #B8860B 60%, #8B6914 100%)";
     const color = getNumberColor(num, gameType);
-    if (color === "red") {
-      return "radial-gradient(circle at 30% 30%, #FF4444, #E31937 50%, #B8001E 100%)";
-    }
-    if (color === "blue") {
-      return "radial-gradient(circle at 30% 30%, #4D9FFF, #0066CC 50%, #004A99 100%)";
-    }
+    if (color === "red") return "radial-gradient(circle at 30% 30%, #FF4444, #E31937 50%, #B8001E 100%)";
+    if (color === "blue") return "radial-gradient(circle at 30% 30%, #4D9FFF, #0066CC 50%, #004A99 100%)";
     return "radial-gradient(circle at 30% 30%, #3DD56D, #00A651 50%, #007A3D 100%)";
   };
 
-  // --- Processing Screen ---
   if (isProcessing) {
     const currentStatus = statusMessages[statusIndex];
     return (
-      <div 
-        className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden print:hidden"
-        style={{ background: theme.bgGradient }}
-      >
+      <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden print:hidden" style={{ background: theme.bgGradient }}>
         <div className="relative z-10 text-center max-w-lg mx-auto px-4">
-          <div 
-            className="w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden"
-            style={{
-              boxShadow: `0 0 50px ${theme.glow}, 0 0 100px ${theme.glow.replace('0.5', '0.3')}`,
-              animation: "pulse 1s ease-in-out infinite",
-            }}
-          >
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden" style={{ boxShadow: `0 0 50px ${theme.glow}, 0 0 100px ${theme.glow.replace('0.5', '0.3')}`, animation: "pulse 1s ease-in-out infinite" }}>
             <img src={partner.image} alt={partner.name[language]} className="w-full h-full object-cover" />
           </div>
           <h1 className="text-3xl font-black mb-2" style={{ color: theme.primary, textShadow: `0 0 30px ${theme.glow}`, fontFamily: "'Georgia', serif" }}>{t.processing}</h1>
-          <p className="text-lg mb-6 transition-all duration-300" style={{ color: theme.secondary, textShadow: `0 0 10px ${theme.glow}` }}>
-            {currentStatus[language]}
-          </p>
+          <p className="text-lg mb-6 transition-all duration-300" style={{ color: theme.secondary, textShadow: `0 0 10px ${theme.glow}` }}>{currentStatus[language]}</p>
           <div className="flex gap-3 justify-center mb-8">
-            {processingNumbers.map((num, idx) => (
-              <div key={idx} style={{ animation: `spin${idx} 0.5s ease-in-out infinite` }}>
-                <LotteryBall number={num} size="lg" />
-              </div>
-            ))}
+            {processingNumbers.map((num, idx) => (<div key={idx} style={{ animation: `spin${idx} 0.5s ease-in-out infinite` }}><LotteryBall number={num} size="lg" /></div>))}
           </div>
-          <div className="w-full max-w-md mx-auto mb-2">
-            <Progress value={processingProgress} className="h-3" style={{ backgroundColor: `${theme.primary}30` }} />
-          </div>
+          <div className="w-full max-w-md mx-auto mb-2"><Progress value={processingProgress} className="h-3" style={{ backgroundColor: `${theme.primary}30` }} /></div>
           <p className="text-sm text-gray-400 mb-8">{Math.round(processingProgress)}%</p>
           <div className="p-4 rounded-xl mb-6" style={{ backgroundColor: "rgba(30, 41, 59, 0.9)", border: `1px solid ${theme.primary}40`, boxShadow: `0 0 20px ${theme.glow.replace('0.5', '0.1')}` }}>
             <div className="flex items-start gap-3">
@@ -718,17 +482,11 @@ export default function Mark6Results() {
               <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 animate-pulse" style={{ borderColor: countdown > 0 ? theme.primary : '#FFD700', boxShadow: `0 0 30px ${theme.glow}, inset 0 0 20px ${theme.glow.replace('0.5', '0.2')}`, background: `radial-gradient(circle, ${theme.primary}20 0%, transparent 70%)` }}>
                 <span className="text-3xl font-black" style={{ textShadow: `0 0 20px ${theme.glow}`, fontFamily: "'Georgia', serif" }}>{countdown > 0 ? countdown : '✓'}</span>
               </div>
-              <p className="text-sm font-semibold" style={{ color: theme.secondary }}>
-                {countdown > 0 ? (language === 'en' ? `${countdown}s until skip available` : language === 'zh-TW' ? `${countdown} 秒後可跳過` : `${countdown} 秒后可跳过`) : (language === 'en' ? 'Skip ready!' : language === 'zh-TW' ? '可以跳過了！' : '可以跳过了！')}
-              </p>
+              <p className="text-sm font-semibold" style={{ color: theme.secondary }}>{countdown > 0 ? (language === 'en' ? `${countdown}s until skip available` : language === 'zh-TW' ? `${countdown} 秒後可跳過` : `${countdown} 秒后可跳过`) : (language === 'en' ? 'Skip ready!' : language === 'zh-TW' ? '可以跳過了！' : '可以跳过了！')}</p>
             </div>
             {countdown === 0 && (
               <Button onClick={handleFastPass} className="px-8 py-4 font-black animate-fade-in transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer relative z-50" style={{ background: partnerId === 'elon' ? `linear-gradient(135deg, #00FF41 0%, #39FF14 100%)` : `linear-gradient(135deg, #FFD700 0%, #FFA500 100%)`, color: "#000000", boxShadow: partnerId === 'elon' ? "0 0 40px rgba(0, 255, 65, 0.8), 0 0 80px rgba(0, 255, 65, 0.5)" : "0 0 40px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.5)", fontSize: "1.1rem", border: "3px solid rgba(255, 255, 255, 0.5)", fontFamily: "'Georgia', serif", minWidth: "280px", pointerEvents: "auto" }}>
-                <Zap className="w-6 h-6 mr-2" />
-                <span className="flex flex-col items-start leading-tight">
-                  <span>{t.fastPassButton}</span>
-                  <span className="text-xs opacity-80">{language === 'en' ? '跳過運算直接查看結果' : 'Skip to Results (Fast Mode)'}</span>
-                </span>
+                <Zap className="w-6 h-6 mr-2" /><span className="flex flex-col items-start leading-tight"><span>{t.fastPassButton}</span><span className="text-xs opacity-80">{language === 'en' ? '跳過運算直接查看結果' : 'Skip to Results (Fast Mode)'}</span></span>
               </Button>
             )}
           </div>
@@ -746,7 +504,6 @@ export default function Mark6Results() {
     );
   }
 
-  // --- Results Report ---
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden print:bg-white print:overflow-visible" style={{ background: theme.bgGradient }}>
       <MatrixBackground />
@@ -757,25 +514,11 @@ export default function Mark6Results() {
 
           {/* --- Report Header --- */}
           <div className="p-5 md:p-6 rounded-2xl mb-4 print:p-4 print:mb-3 print:bg-white print:rounded-lg" style={{ background: `linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)`, border: `2px solid ${theme.primary}60`, boxShadow: `0 8px 32px ${theme.glow.replace('0.5', '0.25')}, 0 0 0 1px rgba(255,255,255,0.05) inset` }}>
-            <div className="hidden print:block text-right mb-2">
-              <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '8pt', color: '#6b7280' }}>
-                Report Generated on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </span>
-            </div>
+            <div className="hidden print:block text-right mb-2"><span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '8pt', color: '#6b7280' }}>Report Generated on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
             
-            {/* Date only - Removed Facebook button from here */}
             <div className="flex items-center justify-between mb-4 print:mb-2">
               <div className="flex items-center gap-2 text-sm text-[#f5e6c8]/60 print:text-gray-600">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
+                <Calendar className="w-4 h-4" /><span>{new Date().toLocaleDateString(language === 'en' ? 'en-US' : language === 'zh-TW' ? 'zh-HK' : 'zh-CN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
 
@@ -785,84 +528,34 @@ export default function Mark6Results() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl md:text-3xl font-black mb-1 tracking-tight print:text-xl print:text-gray-900"
-                    style={{
-                      color: theme.primary,
-                      textShadow: `0 0 30px ${theme.glow}, 0 2px 4px rgba(0,0,0,0.3)`,
-                      fontFamily: "'Georgia', serif",
-                      letterSpacing: "-0.02em",
-                    }}
-                  >
-                    {partner.name[language]}{t.reportTitle}
-                  </h1>
+                  <h1 className="text-2xl md:text-3xl font-black mb-1 tracking-tight print:text-xl print:text-gray-900" style={{ color: theme.primary, textShadow: `0 0 30px ${theme.glow}, 0 2px 4px rgba(0,0,0,0.3)`, fontFamily: "'Georgia', serif", letterSpacing: "-0.02em" }}>{partner.name[language]}{t.reportTitle}</h1>
                   
                   {/* Voice Button with Status Text */}
                   {isSupported && (
-                    <button
-                      onClick={handleVoicePlay}
-                      className={`p-2 rounded-full transition-all duration-300 flex items-center gap-1.5 print:hidden ${
-                        isSpeaking 
-                          ? 'bg-red-500/20 border border-red-500/50 animate-pulse' 
-                          : 'hover:bg-white/10'
-                      }`}
-                      title={isSpeaking ? t.stopVoice : t.listenReport}
-                    >
-                      {isSpeaking ? (
-                        <>
-                          <VolumeX className="w-5 h-5" style={{ color: theme.primary }} />
-                          <span className="text-xs font-medium" style={{ color: theme.primary }}>
-                            {t.stopVoice}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <Volume2 className="w-5 h-5" style={{ color: theme.primary }} />
-                          <span className="text-xs font-medium" style={{ color: theme.primary }}>
-                            {t.listenReport}
-                          </span>
-                        </>
-                      )}
+                    <button onClick={handleVoicePlay} className={`p-2 rounded-full transition-all duration-300 flex items-center gap-1.5 print:hidden ${isSpeaking ? 'bg-red-500/20 border border-red-500/50 animate-pulse' : 'hover:bg-white/10'}`} title={isSpeaking ? t.stopVoice : t.listenReport}>
+                      {isSpeaking ? (<><VolumeX className="w-5 h-5" style={{ color: theme.primary }} /><span className="text-xs font-medium" style={{ color: theme.primary }}>{t.stopVoice}</span></>) : (<><Volume2 className="w-5 h-5" style={{ color: theme.primary }} /><span className="text-xs font-medium" style={{ color: theme.primary }}>{t.listenReport}</span></>)}
                     </button>
                   )}
                   
-                  {/* Game Badge */}
-                  <span 
-                    className="px-3 py-1 rounded-full text-xs font-bold print:bg-gray-200 print:text-gray-800"
-                    style={{
-                      background: gameType === "tw" 
-                        ? "linear-gradient(135deg, #FF6B35 0%, #FF4500 100%)"
-                        : "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
-                      color: "#000000",
-                      boxShadow: "0 0 15px rgba(255, 215, 0, 0.3)",
-                    }}
-                  >
-                    <Trophy className="w-3 h-3 inline mr-1" />
-                    {activeData.label[language] || activeData.label.en}
+                  <span className="px-3 py-1 rounded-full text-xs font-bold print:bg-gray-200 print:text-gray-800" style={{ background: gameType === "tw" ? "linear-gradient(135deg, #FF6B35 0%, #FF4500 100%)" : "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)", color: "#000000", boxShadow: "0 0 15px rgba(255, 215, 0, 0.3)" }}>
+                    <Trophy className="w-3 h-3 inline mr-1" />{activeData.label[language] || activeData.label.en}
                   </span>
                 </div>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full print:bg-gray-100 print:border print:border-gray-300" style={{ background: `linear-gradient(135deg, ${theme.primary}25 0%, ${theme.primary}10 100%)`, border: `1px solid ${theme.primary}40` }}>
-                  <BarChart3 className="w-4 h-4 print:w-3 print:h-3 print:text-gray-600" style={{ color: theme.secondary }} />
-                  <span className="text-sm font-semibold print:text-gray-700" style={{ color: theme.secondary }}>{partnerMath.mathModule[language]}</span>
+                  <BarChart3 className="w-4 h-4 print:w-3 print:h-3 print:text-gray-600" style={{ color: theme.secondary }} /><span className="text-sm font-semibold print:text-gray-700" style={{ color: theme.secondary }}>{partnerMath.mathModule[language]}</span>
                 </div>
               </div>
             </div>
             
             <div className="p-3 rounded-xl mb-4 print:p-2 print:mb-3 print:bg-gray-50 print:border print:border-gray-200" style={{ background: `linear-gradient(135deg, ${theme.primary}12 0%, ${theme.primary}05 100%)`, border: `1px solid ${theme.primary}25`, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05)` }}>
-              <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5 print:text-gray-600" style={{ color: theme.primary }} />
-                <p className="text-sm leading-relaxed print:text-gray-700" style={{ color: "#D1D5DB" }}>{partnerMath.explanation[language]}</p>
-              </div>
+              <div className="flex items-start gap-2"><Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5 print:text-gray-600" style={{ color: theme.primary }} /><p className="text-sm leading-relaxed print:text-gray-700" style={{ color: "#D1D5DB" }}>{partnerMath.explanation[language]}</p></div>
             </div>
 
             {/* --- User Selections --- */}
             {bankers && bankers.length > 0 && (
               <div className="flex items-center gap-2 mb-3 p-2 rounded-lg print:mb-2" style={{ backgroundColor: `${theme.primary}10`, border: `1px solid ${theme.primary}30` }}>
                 <span className="text-xs print:text-black" style={{ color: theme.primary }}>{t.yourBankers}:</span>
-                <div className="flex gap-1">
-                  {bankers.map((num) => (
-                    <div key={num} className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold print:w-6 print:h-6" style={{ background: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)", color: "#000000", boxShadow: "0 0 10px rgba(255, 215, 0, 0.5)" }}>{num}</div>
-                  ))}
-                </div>
+                <div className="flex gap-1">{bankers.map((num) => (<div key={num} className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold print:w-6 print:h-6" style={{ background: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)", color: "#000000", boxShadow: "0 0 10px rgba(255, 215, 0, 0.5)" }}>{num}</div>))}</div>
               </div>
             )}
             {pattern && partnerId === "god-of-gambling" && (
@@ -878,15 +571,8 @@ export default function Mark6Results() {
                 <span className="text-sm font-bold" style={{ color: "#A855F7" }}>{t.yourColorRatio}:</span>
                 <div className="flex items-center gap-2">
                   {(() => {
-                    const ratio = parseColorRatio(colorRatio);
-                    return (
-                      <>
-                        {Array.from({ length: ratio[0] }).map((_, idx) => (<div key={`r-${idx}`} className="w-5 h-5 rounded-full" style={{ background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)" }} />))}
-                        {Array.from({ length: ratio[1] }).map((_, idx) => (<div key={`b-${idx}`} className="w-5 h-5 rounded-full" style={{ background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)" }} />))}
-                        {Array.from({ length: ratio[2] }).map((_, idx) => (<div key={`g-${idx}`} className="w-5 h-5 rounded-full" style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)" }} />))}
-                      </>
-                    );
-                  })()}
+                    const ratio = parseColorRatio(colorRatio); return (<>{Array.from({ length: ratio[0] }).map((_, idx) => (<div key={`r-${idx}`} className="w-5 h-5 rounded-full" style={{ background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)" }} />))}{Array.from({ length: ratio[1] }).map((_, idx) => (<div key={`b-${idx}`} className="w-5 h-5 rounded-full" style={{ background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)" }} />))}{Array.from({ length: ratio[2] }).map((_, idx) => (<div key={`g-${idx}`} className="w-5 h-5 rounded-full" style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)" }} />))}</>
+                  )})()}
                 </div>
                 <div className="px-3 py-1 rounded-full font-bold text-xs" style={{ background: "linear-gradient(135deg, #A855F7 0%, #7C3AED 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(168, 85, 247, 0.5)" }}>
                   {colorRatio === "2-2-2" ? t.colorRatio222 : colorRatio === "3-2-1" ? t.colorRatio321 : colorRatio === "1-3-2" ? t.colorRatio132 : t.colorRatioCustom}
@@ -896,9 +582,7 @@ export default function Mark6Results() {
             {simulationStars && partnerId === "lucky-star" && (
               <div className="flex items-center gap-3 mb-3 p-3 rounded-lg print:mb-2" style={{ backgroundColor: "rgba(255, 215, 0, 0.1)", border: "2px solid rgba(255, 215, 0, 0.5)", boxShadow: "0 0 20px rgba(255, 215, 0, 0.2)" }}>
                 <span className="text-sm font-bold" style={{ color: "#FFD700" }}>{t.yourSimulationPower}:</span>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (<span key={star} className="text-lg" style={{ color: star <= simulationStars ? "#FFD700" : "#404040", textShadow: star <= simulationStars ? "0 0 8px rgba(255, 215, 0, 0.8)" : "none" }}>★</span>))}
-                </div>
+                <div className="flex items-center gap-1">{[1, 2, 3, 4, 5].map((star) => (<span key={star} className="text-lg" style={{ color: star <= simulationStars ? "#FFD700" : "#404040", textShadow: star <= simulationStars ? "0 0 8px rgba(255, 215, 0, 0.8)" : "none" }}>★</span>))}</div>
                 <div className="px-3 py-1 rounded-full font-bold text-xs" style={{ background: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)", color: "#1a1a1a", boxShadow: "0 0 15px rgba(255, 215, 0, 0.5)" }}>
                   {language === "en" ? `${["100K", "250K", "500K", "750K", "1M"][simulationStars - 1]} Simulations` : `${["10萬", "25萬", "50萬", "75萬", "100萬"][simulationStars - 1]}次模擬`}
                 </div>
@@ -907,21 +591,17 @@ export default function Mark6Results() {
             {intuitionLevel && partnerId === "achelois" && (
               <div className="flex items-center gap-3 mb-3 p-3 rounded-lg print:mb-2" style={{ backgroundColor: "rgba(148, 163, 184, 0.1)", border: "2px solid rgba(201, 176, 55, 0.5)", boxShadow: "0 0 20px rgba(201, 176, 55, 0.15)" }}>
                 <span className="text-sm font-bold" style={{ color: "#C9B037" }}>{t.yourIntuitionLevel}:</span>
-                <div className="flex items-center gap-1">
-                  {["🌑", "🌒", "🌓", "🌔", "🌕"].map((moon, idx) => (<span key={idx} className="text-lg" style={{ opacity: idx + 1 <= intuitionLevel ? 1 : 0.3, filter: idx + 1 <= intuitionLevel ? "drop-shadow(0 0 4px rgba(230, 126, 34, 0.8))" : "none" }}>{idx + 1 <= intuitionLevel ? ["🌑", "🌒", "🌓", "🌔", "🌕"][idx] : "🌑"}</span>))}
-                </div>
+                <div className="flex items-center gap-1">{[1, 2, 3, 4, 5].map((idx) => (<span key={idx} className="text-lg" style={{ opacity: idx + 1 <= intuitionLevel ? 1 : 0.3, filter: idx + 1 <= intuitionLevel ? "drop-shadow(0 0 4px rgba(230, 126, 34, 0.8))" : "none" }}>{["🌑", "🌒", "🌓", "🌔", "🌕"][idx]}</span>))}</div>
                 <div className="px-3 py-1 rounded-full font-bold text-xs" style={{ background: "linear-gradient(135deg, #E67E22 0%, #D35400 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(230, 126, 34, 0.4)" }}>{t.intuitionLabels[intuitionLevel - 1]}</div>
               </div>
             )}
             {isQuickMode && (
               <div className="text-center py-2 px-3 rounded-lg mb-3 print:py-1 print:mb-2" style={{ backgroundColor: "rgba(245, 158, 11, 0.2)", border: "1px solid rgba(245, 158, 11, 0.5)" }}>
-                <Zap className="w-4 h-4 inline mr-2" style={{ color: "#F59E0B" }} />
-                <span className="text-sm font-medium" style={{ color: "#F59E0B" }}>{t.quickModeNote}</span>
+                <Zap className="w-4 h-4 inline mr-2" style={{ color: "#F59E0B" }} /><span className="text-sm font-medium" style={{ color: "#F59E0B" }}>{t.quickModeNote}</span>
               </div>
             )}
             <div className="text-center py-2 px-3 rounded-lg mb-3 print:py-1 print:mb-2" style={{ backgroundColor: `${theme.primary}10`, border: `1px solid ${theme.primary}30` }}>
-              <Zap className="w-3 h-3 inline mr-1" style={{ color: theme.primary }} />
-              <span className="text-xs print:text-black" style={{ color: "#C0C0C0" }}>{t.basisNote}</span>
+              <Zap className="w-3 h-3 inline mr-1" style={{ color: theme.primary }} /><span className="text-xs print:text-black" style={{ color: "#C0C0C0" }}>{t.basisNote}</span>
             </div>
 
             {/* --- Predictions Grid --- */}
@@ -949,9 +629,7 @@ export default function Mark6Results() {
           </div>
 
           {/* --- Frequency Chart --- */}
-          <div className="mb-4 print:mb-2 print:break-inside-avoid print:page-break-inside-avoid print:scale-90 print:origin-top">
-            <FrequencyChart predictions={predictions} />
-          </div>
+          <div className="mb-4 print:mb-2 print:break-inside-avoid print:page-break-inside-avoid print:scale-90 print:origin-top"><FrequencyChart predictions={predictions} /></div>
 
           {/* --- Disclaimer --- */}
           <div className="p-3 rounded-xl mb-4 text-center print:hidden" style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
@@ -961,31 +639,24 @@ export default function Mark6Results() {
           {/* --- Action Buttons --- */}
           <div className="flex flex-col gap-3 print:hidden action-buttons">
             <div className="flex flex-row gap-1.5 sm:gap-2 justify-center flex-wrap">
-              <Button onClick={handlePrint} className="flex-1 min-w-[80px] max-w-[110px] sm:min-w-[100px] sm:max-w-[140px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(59, 130, 246, 0.4)" }}>
+              <Button onClick={handlePrint} className="flex-1 min-w-[75px] max-w-[100px] sm:min-w-[100px] sm:max-w-[130px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(59, 130, 246, 0.4)" }}>
                 <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />{t.printReport}
               </Button>
               
-              {/* Copy Text Button */}
-              <Button onClick={handleCopyText} className="flex-1 min-w-[80px] max-w-[110px] sm:min-w-[100px] sm:max-w-[140px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: isCopied ? "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)" : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)", color: "#FFFFFF", boxShadow: isCopied ? "0 0 15px rgba(34, 197, 94, 0.4)" : "0 0 15px rgba(139, 92, 246, 0.4)" }}>
-                {isCopied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />}
-                {isCopied ? t.copied : t.copyText}
+              <Button onClick={handleCopyText} className="flex-1 min-w-[75px] max-w-[100px] sm:min-w-[100px] sm:max-w-[130px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: isCopied ? "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)" : "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)", color: "#FFFFFF", boxShadow: isCopied ? "0 0 15px rgba(34, 197, 94, 0.4)" : "0 0 15px rgba(139, 92, 246, 0.4)" }}>
+                {isCopied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />}{isCopied ? t.copied : t.copyText}
               </Button>
               
-              {/* WhatsApp Share Button */}
-              <Button onClick={handleWhatsAppShare} className="flex-1 min-w-[80px] max-w-[110px] sm:min-w-[100px] sm:max-w-[140px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #25D366 0%, #20BD5A 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(37, 211, 102, 0.4)" }}>
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
+              <Button onClick={handleWhatsAppShare} className="flex-1 min-w-[75px] max-w-[100px] sm:min-w-[100px] sm:max-w-[130px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #25D366 0%, #20BD5A 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(37, 211, 102, 0.4)" }}>
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                 {t.shareWhatsAppLabel}
               </Button>
               
-              {/* Facebook Share Button */}
-              <Button onClick={handleFacebookShare} className="flex-1 min-w-[80px] max-w-[110px] sm:min-w-[100px] sm:max-w-[140px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #1877F2 0%, #166FE5 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(24, 119, 242, 0.4)" }}>
-                <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                {t.shareFacebook}
+              <Button onClick={handleFacebookShare} className="flex-1 min-w-[75px] max-w-[100px] sm:min-w-[100px] sm:max-w-[130px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #1877F2 0%, #166FE5 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(24, 119, 242, 0.4)" }}>
+                <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />{t.shareFacebook}
               </Button>
               
-              <Button onClick={handleReturn} className="flex-1 min-w-[80px] max-w-[110px] sm:min-w-[100px] sm:max-w-[140px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #CC0000 0%, #990000 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(204, 0, 0, 0.4)", border: "none" }}>
+              <Button onClick={handleReturn} className="flex-1 min-w-[75px] max-w-[100px] sm:min-w-[100px] sm:max-w-[130px] px-1.5 sm:px-2 py-2 sm:py-2.5 text-[0.65rem] sm:text-xs font-bold" style={{ background: "linear-gradient(135deg, #CC0000 0%, #990000 100%)", color: "#FFFFFF", boxShadow: "0 0 15px rgba(204, 0, 0, 0.4)", border: "none" }}>
                 <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />{t.returnToGame}
               </Button>
             </div>
@@ -1001,11 +672,10 @@ export default function Mark6Results() {
       </main>
       <div className="print:hidden"><Footer /></div>
 
-      {/* --- Print Styles --- */}
       <style>{`
         @media (max-width: 640px) {
           .lottery-ball-container .w-8, .lottery-ball-container .w-9 { width: 1.75rem !important; height: 1.75rem !important; font-size: 0.7rem !important; }
-          .action-buttons button, .action-buttons a { padding: 0.5rem 0.75rem !important; font-size: 0.7rem !important; min-width: 80px !important; max-width: 110px !important; }
+          .action-buttons button, .action-buttons a { padding: 0.5rem 0.75rem !important; font-size: 0.7rem !important; min-width: 70px !important; max-width: 100px !important; }
         }
         @media print {
           @page { size: A4; margin: 6mm; }

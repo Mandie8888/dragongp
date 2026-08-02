@@ -68,7 +68,7 @@ export default function Mark6Game() {
 
   // Voice controls
   const { speak, speakWelcome, isSpeaking, stop, isSupported, speakFullReport, getPartnerName, getPartnerMethod } = useMark6Speech({ 
-    lang: language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US' 
+    lang: 'zh-HK' // ✅ 强制默认广东话
   });
 
   const content = {
@@ -150,11 +150,11 @@ export default function Mark6Game() {
     setShowPartnerSelection(true);
   };
 
-  const handlePartnerSelected = (partner: Character) => {
+  const handlePartnerSelected = async (partner: Character) => {
     setSelectedPartner(partner);
     setShowPartnerSelection(false);
     
-    // Show partner-specific selection modal BEFORE disclaimer
+    // ✅ 删除 Disclaimer 逻辑：直接在消耗积分后开始特定伙伴的弹窗
     if (partner.id === "elon") {
       setShowBankerSelection(true);
     } else if (partner.id === "aladdin") {
@@ -172,150 +172,83 @@ export default function Mark6Game() {
 
   const handleBankerConfirm = async (bankers: number[]) => {
     const success = await consumeCredit();
-    if (!success) {
-      setShowBankerSelection(false);
-      return;
-    }
+    if (!success) { setShowBankerSelection(false); return; }
     setUserSelections({ ...userSelections, bankers });
     setShowBankerSelection(false);
-    setShowDisclaimer(true);
+    // ✅ 直接跳转结果页，删除 Disclaimer
+    navigateToResults();
   };
 
   const handleColorConfirm = async (colorRatio: string) => {
     const success = await consumeCredit();
-    if (!success) {
-      setShowColorSelection(false);
-      return;
-    }
+    if (!success) { setShowColorSelection(false); return; }
     setUserSelections({ ...userSelections, colorRatio });
     setShowColorSelection(false);
-    setShowDisclaimer(true);
+    navigateToResults();
   };
 
   const handleIntensityConfirm = async (intensity: number) => {
     const success = await consumeCredit();
-    if (!success) {
-      setShowRiskIntensity(false);
-      return;
-    }
+    if (!success) { setShowRiskIntensity(false); return; }
     setUserSelections({ ...userSelections, intensity });
     setShowRiskIntensity(false);
-    setShowDisclaimer(true);
+    navigateToResults();
   };
 
   const handlePatternConfirm = async (pattern: string) => {
     const success = await consumeCredit();
-    if (!success) {
-      setShowPatternIntensity(false);
-      return;
-    }
+    if (!success) { setShowPatternIntensity(false); return; }
     setUserSelections({ ...userSelections, pattern });
     setShowPatternIntensity(false);
-    setShowDisclaimer(true);
+    navigateToResults();
   };
 
   const handleSimulationConfirm = async (stars: number) => {
     const success = await consumeCredit();
-    if (!success) {
-      setShowSimulationPower(false);
-      return;
-    }
+    if (!success) { setShowSimulationPower(false); return; }
     setUserSelections({ ...userSelections, simulationStars: stars });
     setShowSimulationPower(false);
-    setShowDisclaimer(true);
+    navigateToResults();
   };
 
   const handleIntuitionConfirm = async (level: number) => {
     const success = await consumeCredit();
-    if (!success) {
-      setShowIntuitionLevel(false);
-      return;
-    }
+    if (!success) { setShowIntuitionLevel(false); return; }
     setUserSelections({ ...userSelections, intuitionLevel: level });
     setShowIntuitionLevel(false);
-    setShowDisclaimer(true);
+    navigateToResults();
   };
 
-  const handleDisclaimerAccept = () => {
-    setShowDisclaimer(false);
-    // Navigate with selections including game type
+  const navigateToResults = () => {
     const params = new URLSearchParams();
     params.set("game", selectedGame);
     params.set("partner", selectedPartner?.id || "");
-    if (userSelections.bankers) {
-      params.set("bankers", userSelections.bankers.join(","));
-    }
-    if (userSelections.colorRatio) {
-      params.set("colorRatio", userSelections.colorRatio);
-    }
-    if (userSelections.intensity !== undefined) {
-      params.set("intensity", userSelections.intensity.toString());
-    }
-    if (userSelections.pattern) {
-      params.set("pattern", userSelections.pattern);
-    }
-    if (userSelections.simulationStars !== undefined) {
-      params.set("simulationStars", userSelections.simulationStars.toString());
-    }
-    if (userSelections.intuitionLevel !== undefined) {
-      params.set("intuitionLevel", userSelections.intuitionLevel.toString());
-    }
+    if (userSelections.bankers) params.set("bankers", userSelections.bankers.join(","));
+    if (userSelections.colorRatio) params.set("colorRatio", userSelections.colorRatio);
+    if (userSelections.intensity !== undefined) params.set("intensity", userSelections.intensity.toString());
+    if (userSelections.pattern) params.set("pattern", userSelections.pattern);
+    if (userSelections.simulationStars !== undefined) params.set("simulationStars", userSelections.simulationStars.toString());
+    if (userSelections.intuitionLevel !== undefined) params.set("intuitionLevel", userSelections.intuitionLevel.toString());
     navigate(`/mark6-results?${params.toString()}`);
-  };
-
-  const handleDisclaimerDecline = () => {
-    setShowDisclaimer(false);
-    setSelectedPartner(null);
-    setUserSelections({});
   };
 
   // Handle voice welcome with full report
   const handleVoiceWelcome = () => {
-    if (isSpeaking) {
-      stop();
-    } else {
-      // If a partner is selected, speak the full report
-      if (selectedPartner) {
-        const partnerName = getPartnerName(selectedPartner.id, language);
-        const method = getPartnerMethod(selectedPartner.id, language);
-        
-        // Generate mock predictions for voice demo
-        const mockPredictions = generateMockPredictions();
-        
-        speakFullReport(selectedPartner.id, partnerName, method, selectedGame, mockPredictions);
-      } else {
-        // Otherwise speak welcome message
-        const gameName = selectedGame === 'tw' 
-          ? (language === 'zh-TW' ? '台灣大樂透' : language === 'zh-CN' ? '台湾大乐透' : 'Taiwan Big Lotto') 
-          : (language === 'zh-TW' ? '香港六合彩' : language === 'zh-CN' ? '香港六合彩' : 'Hong Kong Mark 6');
-        
-        let welcomeMsg = '';
-        if (language === 'zh-TW') {
-          welcomeMsg = `歡迎來到 DragonGP AI。您即將開始玩 ${gameName}。請選擇您的 AI 夥伴開始概率分析。祝您好運！`;
-        } else if (language === 'zh-CN') {
-          welcomeMsg = `欢迎来到 DragonGP AI。您即将开始玩 ${gameName}。请选择您的 AI 伙伴开始概率分析。祝您好运！`;
-        } else {
-          welcomeMsg = `Welcome to DragonGP AI. You are about to play ${gameName}. Select your AI partner to begin your probability analysis. Good luck!`;
-        }
-        const voiceLang = language === 'zh-TW' ? 'zh-HK' : language === 'zh-CN' ? 'zh-CN' : 'en-US';
-        speak(welcomeMsg, voiceLang);
-      }
-    }
+    if (isSpeaking) { stop(); return; }
+    
+    // ✅ 广东话默认欢迎语 (强制输出广东话)
+    const gameName = selectedGame === 'tw' ? '台灣大樂透' : '香港六合彩';
+    let welcomeMsg = `歡迎來到 DragonGP AI。您即將開始玩 ${gameName}。請選擇您的 AI 夥伴開始概率分析。祝您好運！`;
+    speak(welcomeMsg, 'zh-HK'); // 强制语言为广东话
   };
-  // Auto-play welcome voice when page loads
-useEffect(() => {
-  // Small delay to ensure everything is rendered
-  const timer = setTimeout(() => {
-    handleVoiceWelcome();
-  }, 1500);
-  
-  return () => {
-    clearTimeout(timer);
-    if (isSpeaking) {
-      stop();
-    }
-  };
-}, []);
+
+  // Auto-play welcome voice when page loads (Default Cantonese)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleVoiceWelcome();
+    }, 1500);
+    return () => { clearTimeout(timer); if (isSpeaking) stop(); };
+  }, []);
 
   // Generate mock predictions for voice demo
   const generateMockPredictions = (): number[][] => {
@@ -324,9 +257,7 @@ useEffect(() => {
       const nums: number[] = [];
       while (nums.length < 6) {
         const num = Math.floor(Math.random() * 49) + 1;
-        if (!nums.includes(num)) {
-          nums.push(num);
-        }
+        if (!nums.includes(num)) nums.push(num);
       }
       sets.push(nums.sort((a, b) => a - b));
     }
@@ -344,13 +275,10 @@ useEffect(() => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background casino-roulette-bg">
       <MatrixBackground />
-      
       <Navbar />
-      
       <main className="flex-1 pt-16 pb-4 relative z-10">
         <div className="container mx-auto px-4">
           
-          {/* Header with Voice Button at the end */}
           <div className="text-center mb-3">
             <div className="flex items-center justify-center gap-3 mb-1">
               <h1 className="text-2xl md:text-3xl font-black tracking-wider text-primary font-display"
@@ -361,13 +289,10 @@ useEffect(() => {
             </div>
             <div className="mb-2 flex items-center justify-center gap-2 flex-wrap">
               <InlineLanguageSwitcher />
-              {/* Voice Button - placed after language switcher */}
               {isSupported && (
                 <button
                   onClick={handleVoiceWelcome}
-                  className={`p-2 rounded-full transition-colors ${
-                    isSpeaking ? 'bg-red-500/20 animate-pulse' : 'hover:bg-primary/10'
-                  }`}
+                  className={`p-2 rounded-full transition-colors ${isSpeaking ? 'bg-red-500/20 animate-pulse' : 'hover:bg-primary/10'}`}
                   title={isSpeaking ? t.stopVoice : (selectedPartner ? t.voiceWelcome + " (with partner)" : t.voiceWelcome)}
                 >
                   {isSpeaking ? (
@@ -381,133 +306,55 @@ useEffect(() => {
             <p className="text-foreground/60 text-xs">{t.subtitle}</p>
           </div>
 
-          {/* Credits Bar */}
           {profile && (
             <div className="flex justify-center mb-4">
               <div className="flex items-center gap-3 px-4 py-2 rounded-xl glass-dark">
                 <span className="text-xs text-foreground/60">{t.creditsLabel}</span>
-                <span 
-                  className="text-xl font-bold"
-                  style={{ color: creditBalance > 0 ? 'hsl(43 80% 55%)' : 'hsl(0 84% 60%)' }}
-                >
-                  {creditBalance}
-                </span>
-                <Button
-                  onClick={() => navigate("/pricing")}
-                  size="sm"
-                  className="ml-1 font-bold text-xs py-1 px-2 bg-emerald-500 hover:bg-emerald-600 text-white"
-                >
-                  <Zap className="w-3 h-3 mr-1" />
-                  {t.topUp}
+                <span className="text-xl font-bold" style={{ color: creditBalance > 0 ? 'hsl(43 80% 55%)' : 'hsl(0 84% 60%)' }}>{creditBalance}</span>
+                <Button onClick={() => navigate("/pricing")} size="sm" className="ml-1 font-bold text-xs py-1 px-2 bg-emerald-500 hover:bg-emerald-600 text-white">
+                  <Zap className="w-3 h-3 mr-1" />{t.topUp}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Game Selection Toggle */}
           <div className="flex justify-center mb-4">
             <div className="flex gap-2 bg-card/50 p-1.5 rounded-xl border border-border">
-              <button
-                onClick={() => setSelectedGame("hk")}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                  selectedGame === "hk"
-                    ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md"
-                    : "text-foreground/60 hover:text-foreground"
-                }`}
-              >
-                <Trophy className="w-4 h-4 inline mr-1.5" />
-                {t.hkLotto}
+              <button onClick={() => setSelectedGame("hk")} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedGame === "hk" ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md" : "text-foreground/60 hover:text-foreground"}`}>
+                <Trophy className="w-4 h-4 inline mr-1.5" />{t.hkLotto}
               </button>
-              <button
-                onClick={() => setSelectedGame("tw")}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                  selectedGame === "tw"
-                    ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md"
-                    : "text-foreground/60 hover:text-foreground"
-                }`}
-              >
-                <Trophy className="w-4 h-4 inline mr-1.5" />
-                {t.twLotto}
+              <button onClick={() => setSelectedGame("tw")} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedGame === "tw" ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md" : "text-foreground/60 hover:text-foreground"}`}>
+                <Trophy className="w-4 h-4 inline mr-1.5" />{t.twLotto}
               </button>
             </div>
           </div>
 
-          {/* Funny Statement Bubble */}
           <div className="flex justify-center mb-3">
             <div className="px-4 py-2 rounded-full text-center glass-dark border border-primary/30">
-              <p className="text-xs font-medium text-primary">
-                {t.funnyStatement}
-              </p>
-              <p className="text-[10px] text-foreground/50">
-                {t.funnyStatementCn}
-              </p>
+              <p className="text-xs font-medium text-primary">{t.funnyStatement}</p>
+              <p className="text-[10px] text-foreground/50">{t.funnyStatementCn}</p>
             </div>
           </div>
 
-          {/* Main Layout */}
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            
-            {/* Left Column - Character Circle */}
             <div className="p-4 rounded-2xl relative felt-texture border border-primary/20">
-              <h2 className="text-center text-sm font-bold mb-1 text-emerald-400">
-                {t.partnersTitle}
-              </h2>
-              <p className="text-center text-[10px] text-foreground/40 mb-2">
-                {t.clickToView}
-              </p>
-              
-              <CharacterCircle 
-                characters={characters}
-                onCharacterClick={handleCharacterClick}
-                language={language}
-              />
+              <h2 className="text-center text-sm font-bold mb-1 text-emerald-400">{t.partnersTitle}</h2>
+              <p className="text-center text-[10px] text-foreground/40 mb-2">{t.clickToView}</p>
+              <CharacterCircle characters={characters} onCharacterClick={handleCharacterClick} language={language} />
             </div>
 
-            {/* Right Column - Goddess + Start Button */}
             <div className="p-4 rounded-2xl flex flex-col items-center justify-center felt-texture border border-primary/20">
-              <div 
-                className="w-36 h-36 mb-3 rounded-full overflow-hidden"
-                style={{ boxShadow: "0 0 40px hsl(43 80% 55% / 0.4), 0 0 80px hsl(43 80% 55% / 0.2)" }}
-              >
-                <img 
-                  src={goddessImg} 
-                  alt="Goddess of Fortune"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-36 h-36 mb-3 rounded-full overflow-hidden" style={{ boxShadow: "0 0 40px hsl(43 80% 55% / 0.4), 0 0 80px hsl(43 80% 55% / 0.2)" }}>
+                <img src={goddessImg} alt="Goddess of Fortune" className="w-full h-full object-cover" />
               </div>
-
-              <p className="text-[10px] mb-3 text-foreground/40">
-                {t.poweredBy}
-              </p>
-
-              <Button
-                onClick={profile ? handleStartGame : () => setShowSignUpDialog(true)}
-                className="relative px-8 py-4 text-lg font-black tracking-wider overflow-hidden group bg-gradient-gold text-navy rounded-xl shadow-gold"
-              >
-                <span 
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{
-                    background: "linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)",
-                    animation: "shine 2s infinite",
-                  }}
-                />
-                
-                <Play className="w-5 h-5 mr-2 inline" />
-                {profile ? t.startGame : t.signUp}
-                <Sparkles className="w-4 h-4 ml-2 inline" />
+              <p className="text-[10px] mb-3 text-foreground/40">{t.poweredBy}</p>
+              <Button onClick={profile ? handleStartGame : () => setShowSignUpDialog(true)} className="relative px-8 py-4 text-lg font-black tracking-wider overflow-hidden group bg-gradient-gold text-navy rounded-xl shadow-gold">
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(45deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%)", animation: "shine 2s infinite" }} />
+                <Play className="w-5 h-5 mr-2 inline" />{profile ? t.startGame : t.signUp}<Sparkles className="w-4 h-4 ml-2 inline" />
               </Button>
-
-              {/* Decorative lottery balls */}
               <div className="flex gap-1.5 mt-3">
                 {[1, 2, 3, 4, 5, 6].map((num) => (
-                  <div
-                    key={num}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                    style={{
-                      background: num <= 2 ? "#EF4444" : num <= 4 ? "#3B82F6" : "#22C55E",
-                      boxShadow: `0 0 8px ${num <= 2 ? "rgba(239, 68, 68, 0.5)" : num <= 4 ? "rgba(59, 130, 246, 0.5)" : "rgba(34, 197, 94, 0.5)"}`,
-                    }}
-                  >
+                  <div key={num} className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: num <= 2 ? "#EF4444" : num <= 4 ? "#3B82F6" : "#22C55E", boxShadow: `0 0 8px ${num <= 2 ? "rgba(239, 68, 68, 0.5)" : num <= 4 ? "rgba(59, 130, 246, 0.5)" : "rgba(34, 197, 94, 0.5)"}` }}>
                     {Math.floor(Math.random() * 49) + 1}
                   </div>
                 ))}
@@ -516,16 +363,10 @@ useEffect(() => {
           </div>
         </div>
         
-        {/* CTA Bar - Go to AI Stocks */}
         <div className="mt-6 px-4 max-w-md mx-auto">
-          <Link
-            to="/ai-stocks"
-            className="flex items-center justify-center gap-2 w-full py-3.5 px-4 bg-gradient-gold text-navy font-bold text-base rounded-xl shadow-gold transition-all duration-300 active:scale-[0.98] hover:opacity-90"
-          >
+          <Link to="/ai-stocks" className="flex items-center justify-center gap-2 w-full py-3.5 px-4 bg-gradient-gold text-navy font-bold text-base rounded-xl shadow-gold transition-all duration-300 active:scale-[0.98] hover:opacity-90">
             <TrendingUp className="w-5 h-5 flex-shrink-0" />
-            <span className="text-center leading-tight">
-              {language === "zh-TW" ? "立即前往 AI 股市概率" : language === "zh-CN" ? "立即前往 AI 股市概率" : "Go to AI Stocks Probability Now"}
-            </span>
+            <span className="text-center leading-tight">{language === "zh-TW" ? "立即前往 AI 股市概率" : language === "zh-CN" ? "立即前往 AI 股市概率" : "Go to AI Stocks Probability Now"}</span>
           </Link>
         </div>
       </main>
@@ -533,86 +374,22 @@ useEffect(() => {
       <Footer />
 
       {/* Modals */}
-      <CharacterProfileModal
-        character={selectedCharacter}
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        language={language}
-      />
+      <CharacterProfileModal character={selectedCharacter} isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} language={language} />
+      <PartnerSelectionModal isOpen={showPartnerSelection} onClose={() => setShowPartnerSelection(false)} onSelectPartner={handlePartnerSelected} language={language} />
+      
+      {/* ✅ GamblingDisclaimer 已删除，不再调用 */}
 
-      <PartnerSelectionModal
-        isOpen={showPartnerSelection}
-        onClose={() => setShowPartnerSelection(false)}
-        onSelectPartner={handlePartnerSelected}
-        language={language}
-      />
-
-      <GamblingDisclaimer
-        isOpen={showDisclaimer}
-        onAccept={handleDisclaimerAccept}
-        onDecline={handleDisclaimerDecline}
-        language={language}
-      />
-
-      <BankerSelectionModal
-        isOpen={showBankerSelection}
-        onClose={() => setShowBankerSelection(false)}
-        onConfirm={handleBankerConfirm}
-        language={language}
-      />
-
-      <ColorSelectionModal
-        isOpen={showColorSelection}
-        onClose={() => setShowColorSelection(false)}
-        onConfirm={handleColorConfirm}
-        language={language}
-      />
-
-      <RiskIntensityModal
-        isOpen={showRiskIntensity}
-        onClose={() => setShowRiskIntensity(false)}
-        onConfirm={handleIntensityConfirm}
-        partner={selectedPartner}
-        language={language}
-      />
-
-      <PatternIntensityModal
-        isOpen={showPatternIntensity}
-        onClose={() => setShowPatternIntensity(false)}
-        onConfirm={handlePatternConfirm}
-        partner={selectedPartner}
-        language={language}
-      />
-
-      <SimulationPowerModal
-        isOpen={showSimulationPower}
-        onClose={() => setShowSimulationPower(false)}
-        onConfirm={handleSimulationConfirm}
-        language={language}
-      />
-
-      <IntuitionLevelModal
-        isOpen={showIntuitionLevel}
-        onClose={() => setShowIntuitionLevel(false)}
-        onConfirm={handleIntuitionConfirm}
-        language={language}
-      />
-
-      <CreditsDepletedPopup
-        open={showOutOfCredits}
-        onOpenChange={setShowOutOfCredits}
-      />
-
-      <SignUpDialog 
-        open={showSignUpDialog} 
-        onOpenChange={setShowSignUpDialog} 
-      />
+      <BankerSelectionModal isOpen={showBankerSelection} onClose={() => setShowBankerSelection(false)} onConfirm={handleBankerConfirm} language={language} />
+      <ColorSelectionModal isOpen={showColorSelection} onClose={() => setShowColorSelection(false)} onConfirm={handleColorConfirm} language={language} />
+      <RiskIntensityModal isOpen={showRiskIntensity} onClose={() => setShowRiskIntensity(false)} onConfirm={handleIntensityConfirm} partner={selectedPartner} language={language} />
+      <PatternIntensityModal isOpen={showPatternIntensity} onClose={() => setShowPatternIntensity(false)} onConfirm={handlePatternConfirm} partner={selectedPartner} language={language} />
+      <SimulationPowerModal isOpen={showSimulationPower} onClose={() => setShowSimulationPower(false)} onConfirm={handleSimulationConfirm} language={language} />
+      <IntuitionLevelModal isOpen={showIntuitionLevel} onClose={() => setShowIntuitionLevel(false)} onConfirm={handleIntuitionConfirm} language={language} />
+      <CreditsDepletedPopup open={showOutOfCredits} onOpenChange={setShowOutOfCredits} />
+      <SignUpDialog open={showSignUpDialog} onOpenChange={setShowSignUpDialog} />
 
       <style>{`
-        @keyframes shine {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
       `}</style>
     </div>
   );
